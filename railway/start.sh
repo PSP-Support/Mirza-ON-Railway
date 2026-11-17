@@ -51,5 +51,24 @@ fi
   done
 ) &
 
+# Enforce exactly one Apache MPM at runtime as well as during image build.
+# This also repairs stale/extra module symlinks that may remain in the image.
+echo "[Mirza] Enforcing Apache MPM: mpm_prefork"
+for module in mpm_event mpm_worker mpm_prefork; do
+  a2dismod "$module" >/dev/null 2>&1 || true
+done
+rm -f /etc/apache2/mods-enabled/mpm_*.load /etc/apache2/mods-enabled/mpm_*.conf
+a2enmod mpm_prefork >/dev/null
+
+MPM_COUNT="$(apache2ctl -M 2>&1 | grep -Ec 'mpm_(event|worker|prefork)_module' || true)"
+if [ "$MPM_COUNT" -ne 1 ]; then
+  echo "[Mirza] ERROR: Expected exactly one Apache MPM, found ${MPM_COUNT}." >&2
+  ls -l /etc/apache2/mods-enabled/mpm_* 2>/dev/null || true
+  apache2ctl -M 2>&1 || true
+  exit 1
+fi
+
+apache2ctl -t
+
 echo "[Mirza] Starting Apache on port ${PORT}"
 exec apache2-foreground
