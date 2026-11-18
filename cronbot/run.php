@@ -64,6 +64,8 @@ try {
             }
         }
 
+        // Included legacy jobs may change PHP's error_log setting; keep dispatcher diagnostics visible.
+        ini_set('error_log', '/dev/stderr');
         $jobError = null;
         $jobStart = time();
         try {
@@ -72,11 +74,13 @@ try {
                 error_log('[Mirza cron] starting broadcast queue worker');
             }
             include $script;
+            ini_set('error_log', '/dev/stderr');
             if ($jobName === 'sendmessage') {
                 error_log('[Mirza cron] broadcast queue worker finished');
             }
             error_log('[Mirza cron] DONE ' . $jobName);
         } catch (Throwable $e) {
+            ini_set('error_log', '/dev/stderr');
             $jobError = $e->getMessage();
             error_log('[Mirza cron] ERROR in ' . $jobName . ': ' . $jobError);
         }
