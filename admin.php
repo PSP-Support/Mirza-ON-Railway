@@ -1099,17 +1099,22 @@ elseif ($datain == "systemsms") {
         $textday = "";
     }
     $textconfirm = sprintf($textbotlang['Admin']['messageBulk']['confirmSummary2'], $typesend, $typeservice, $userdata['agent'] ?? '', $textday);
-    $startaction = json_encode([
-        'inline_keyboard' => [
-            [
-                ['text' => $textbotlang['keyboard']['confirmAndStart'], 'callback_data' => 'startaction'],
-            ],
-        ]
-    ]);
+    $startactionButtons = [
+        [
+            ['text' => $textbotlang['keyboard']['confirmAndStart'], 'callback_data' => 'startaction'],
+        ],
+    ];
+    if (($userdata['typeservice'] ?? '') === 'sendmessage') {
+        $startactionButtons[] = [
+            ['text' => '🧪 تست ارسال فقط به کاربر آزمایشی', 'callback_data' => 'startaction_test'],
+        ];
+    }
+    $startaction = json_encode(['inline_keyboard' => $startactionButtons]);
     sendmessage($from_id, $textconfirm, $startaction, 'HTML');
     sendmessage($from_id, $textbotlang['Admin']['messageBulk']['confirmStart'], $keyboardadmin, 'HTML');
     step("home", $from_id);
-} elseif ($datain == "startaction") {
+} elseif ($datain == "startaction" || $datain == "startaction_test") {
+    $isBroadcastTest = ($datain === 'startaction_test');
     $userdata = json_decode($user['Processing_value'], true);
     if (!isset($userdata['typeservice'])) {
         sendmessage($from_id, $textbotlang['Admin']['messageBulk']['errorRestart'], $keyboardadmin, 'HTML');
@@ -1119,6 +1124,10 @@ elseif ($datain == "systemsms") {
     $typeservice = $userdata['typeservice'];
     $typeusermessage = $userdata['typeusermessage'];
     $text = $userdata['message'];
+    if ($isBroadcastTest && $typeservice !== 'sendmessage') {
+        sendmessage($from_id, 'تست محدود فقط برای پیام متنی همگانی فعال است.', $keyboardadmin, 'HTML');
+        return;
+    }
     $cancelmessage = json_encode([
         'inline_keyboard' => [
             [
@@ -1196,6 +1205,17 @@ elseif ($datain == "systemsms") {
             "pingmessage" => $userdata['typepinmessage'],
             "btnmessage" => $userdata['btntypemessage']
         ));
+        if ($isBroadcastTest) {
+            $testUserId = 8873717047;
+            $checkTestUser = $pdo->prepare("SELECT id FROM user WHERE id = ? LIMIT 1");
+            $checkTestUser->execute([$testUserId]);
+            if (!$checkTestUser->fetchColumn()) {
+                sendmessage($from_id, 'اکانت آزمایشی هنوز در جدول کاربران ربات ثبت نشده است؛ ابتدا با آن ربات را Start کن.', $keyboardadmin, 'HTML');
+                return;
+            }
+            $userslist = json_encode([['id' => $testUserId]]);
+            error_log('[Mirza broadcast] restricted test mode; recipient_count=1; target=' . $testUserId);
+        }
         require_once __DIR__ . '/cronbot/broadcast_queue.php';
         mirza_broadcast_create($pdo, json_decode($data, true), json_decode($userslist, true) ?: []);
     } elseif ($typeservice == "forwardmessage") {
