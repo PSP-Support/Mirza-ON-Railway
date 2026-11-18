@@ -1191,8 +1191,8 @@ elseif ($datain == "systemsms") {
             "pingmessage" => $userdata['typepinmessage'],
             "btnmessage" => $userdata['btntypemessage']
         ));
-        file_put_contents("cronbot/users.json", $userslist);
-        file_put_contents('cronbot/info', $data);
+        require_once __DIR__ . '/cronbot/broadcast_queue.php';
+        mirza_broadcast_create($pdo, json_decode($data, true), json_decode($userslist, true) ?: []);
     } elseif ($typeservice == "forwardmessage") {
         if ($agent == "all") {
             if ($typeusermessage == "all") {
@@ -1251,8 +1251,8 @@ elseif ($datain == "systemsms") {
             "message" => $userdata['message'],
             "pingmessage" => $userdata['typepinmessage'],
         ));
-        file_put_contents("cronbot/users.json", $userslist);
-        file_put_contents('cronbot/info', $data);
+        require_once __DIR__ . '/cronbot/broadcast_queue.php';
+        mirza_broadcast_create($pdo, json_decode($data, true), json_decode($userslist, true) ?: []);
     } elseif ($typeservice == "xdaynotmessage") {
         $timedaystamp = intval($userdata['daynoyuse']) * 86400;
         $timenouser = time() - $timedaystamp;
@@ -1289,16 +1289,14 @@ elseif ($datain == "systemsms") {
             "pingmessage" => $userdata['typepinmessage'],
             "btnmessage" => $userdata['btntypemessage']
         ));
-        file_put_contents("cronbot/users.json", $userslist);
-        file_put_contents('cronbot/info', $data);
+        require_once __DIR__ . '/cronbot/broadcast_queue.php';
+        mirza_broadcast_create($pdo, json_decode($data, true), json_decode($userslist, true) ?: []);
     }
 } elseif ($datain == "cancel_sendmessage") {
-    if (is_file('cronbot/users.json')) {
-        unlink('cronbot/users.json');
-    }
-    if (is_file('cronbot/info')) {
-        unlink('cronbot/info');
-    }
+    require_once __DIR__ . '/cronbot/broadcast_queue.php';
+    mirza_broadcast_cancel($pdo, (int)$from_id);
+    if (is_file('cronbot/users.json')) @unlink('cronbot/users.json');
+    if (is_file('cronbot/info')) @unlink('cronbot/info');
     deletemessage($from_id, $message_id);
     sendmessage($from_id, $textbotlang['Admin']['messageBulk']['canceled'], null, 'HTML');
 } elseif (preg_match('/sendmessageuser_(\w+)/', $datain, $dataget)) {
