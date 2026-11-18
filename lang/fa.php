@@ -3542,7 +3542,7 @@ f,n.n2',
                         'activated' => '✅  پنل تحت وب شما با موفقیت فعال گردید.
 
 
-🔗آدرس ورود : https://%s/panel
+🔗آدرس ورود : https://%s/panel/login.php
 👤نام کاربری :  <code>%s</code>
 🔑رمز عبور :  <code>%s</code>
 
