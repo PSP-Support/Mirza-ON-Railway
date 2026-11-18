@@ -825,6 +825,11 @@ if ($datain == "paygwback") {
 }
 //_____________________[ message ]____________________________//
 elseif ($datain == "systemsms") {
+    $activeBroadcast = $pdo->query("SELECT id FROM broadcast_queue WHERE status='active' LIMIT 1")->fetchColumn();
+    if ($activeBroadcast) {
+        sendmessage($from_id, $textbotlang['Admin']['messageBulk']['busy'], $keyboardadmin, 'HTML');
+        return;
+    }
     if (is_file('cronbot/users.json')) {
         $userslist = json_decode(file_get_contents('cronbot/users.json'), true);
         if (is_array($userslist) and count($userslist) != 0) {
