@@ -58,8 +58,9 @@ function validate_telegram_init_data($rawData, string $botToken): array
             throw new InvalidArgumentException('Telegram init data is missing or invalid');
         }
 
-        $decodedQuery = html_entity_decode($rawData, ENT_QUOTES | ENT_HTML5, 'UTF-8');
-        parse_str($decodedQuery, $initData);
+        // Telegram signs the exact URL-decoded query values. Do not HTML-decode
+        // the payload before verification, because that can mutate signed data.
+        parse_str($rawData, $initData);
     } elseif (is_array($rawData)) {
         $initData = $rawData;
     } else {
