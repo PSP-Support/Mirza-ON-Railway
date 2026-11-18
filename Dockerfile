@@ -6,10 +6,10 @@ ENV APACHE_DOCUMENT_ROOT=/app \
     RAILWAY_PROXY_MODE=true
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-      git unzip curl libcurl4-openssl-dev libzip-dev libpng-dev libjpeg62-turbo-dev \
+      git unzip curl libsodium-dev libcurl4-openssl-dev libzip-dev libpng-dev libjpeg62-turbo-dev \
       libfreetype6-dev libicu-dev libxml2-dev libssh2-1-dev libonig-dev cron \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install -j"$(nproc)" pdo_mysql mysqli curl mbstring zip gd intl bcmath soap opcache \
+    && docker-php-ext-install -j"$(nproc)" pdo_mysql mysqli curl mbstring zip gd intl bcmath soap opcache sodium \
     && pecl install ssh2-1.4.1 \
     && docker-php-ext-enable ssh2 \
     && a2enmod rewrite headers expires \
