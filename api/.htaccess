@@ -1,0 +1,9 @@
+# Resolve extensionless API endpoints to their PHP handlers.
+Options -MultiViews
+RewriteEngine On
+
+# Keep real files and directories untouched.
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME}.php -f
+RewriteRule ^(.+?)/?$ $1.php [END]
