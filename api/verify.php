@@ -77,8 +77,8 @@ function validate_telegram_init_data($rawData, string $botToken): array
     $receivedHash = isset($initData['hash']) ? (string) $initData['hash'] : '';
     $receivedSignature = isset($initData['signature']) ? (string) $initData['signature'] : '';
 
-    // Bot-owner HMAC validation includes every field except "hash".
-    // Third-party Ed25519 validation excludes both "hash" and "signature".
+    // Telegram may include both hash and signature. The signature field is
+    // not part of the bot-owner HMAC data-check string; Ed25519 excludes both.
     $hmacDataCheckArray = [];
     $ed25519DataCheckArray = [];
     foreach ($initData as $key => $value) {
@@ -92,9 +92,8 @@ function validate_telegram_init_data($rawData, string $botToken): array
         }
 
         $pair = $key . '=' . $stringValue;
-        $hmacDataCheckArray[] = $pair;
-
         if ($key !== 'signature') {
+            $hmacDataCheckArray[] = $pair;
             $ed25519DataCheckArray[] = $pair;
         }
     }
@@ -110,12 +109,16 @@ function validate_telegram_init_data($rawData, string $botToken): array
 
     $isValid = false;
     if ($receivedHash !== '') {
-        // Telegram WebApp HMAC validation for bot owners: exclude only "hash".
+        // Bot-owner HMAC validation: exclude both hash and Telegram's
+        // auxiliary Ed25519 signature field from the HMAC data-check string.
         $secretKey = hash_hmac('sha256', 'WebAppData', $botToken, true);
         $calculatedHash = hash_hmac('sha256', $hmacDataCheckString, $secretKey);
         $isValid = hash_equals($calculatedHash, $receivedHash);
-    } elseif ($receivedSignature !== '') {
-        // Telegram Ed25519 third-party signature validation.
+    }
+
+    // If HMAC is absent or does not match, try Telegram's documented
+    // third-party Ed25519 validation when a signature is available.
+    if (!$isValid && $receivedSignature !== '') {
         $botId = explode(':', $botToken, 2)[0];
         $publicKeyHex = 'e7bf03a2fa4602af4580703d88dda5bb59f32ed8b02a56c187fe7d34caed242d';
         $signatureData = strtr($receivedSignature, '-_', '+/');
@@ -130,7 +133,9 @@ function validate_telegram_init_data($rawData, string $botToken): array
             $publicKey = hex2bin($publicKeyHex);
             $isValid = sodium_crypto_sign_verify_detached($signature, $signatureCheckString, $publicKey);
         }
-    } else {
+    }
+
+    if ($receivedHash === '' && $receivedSignature === '') {
         throw new InvalidArgumentException('Telegram init data is missing required signature');
     }
 
