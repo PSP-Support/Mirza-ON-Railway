@@ -111,7 +111,7 @@ function validate_telegram_init_data($rawData, string $botToken): array
     $isValid = false;
     if ($receivedHash !== '') {
         // Telegram WebApp HMAC validation for bot owners: exclude only "hash".
-        $secretKey = hash_hmac('sha256', 'WebAppData', $botToken, true);
+        $secretKey = hash_hmac('sha256', $botToken, 'WebAppData', true);
         $calculatedHash = hash_hmac('sha256', $hmacDataCheckString, $secretKey);
         $isValid = hash_equals($calculatedHash, $receivedHash);
     } elseif ($receivedSignature !== '') {
