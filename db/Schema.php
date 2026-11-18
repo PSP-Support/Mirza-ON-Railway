@@ -160,16 +160,29 @@ final class Schema
     {
         $files = glob($directory . '/*.php') ?: [];
         sort($files);
+        $this->runtimeLog('[Mirza db] migration directory: ' . $directory . '; files found: ' . count($files));
         foreach ($files as $file) {
             $name = basename($file, '.php');
+            $this->runtimeLog('[Mirza db] migration ' . $name . ': running');
             try {
                 $migration = $this->loadDefinition($file);
                 if (is_callable($migration)) {
                     $migration($this->pdo, $this);
                 }
+                $this->runtimeLog('[Mirza db] migration ' . $name . ': finished');
             } catch (Throwable $e) {
                 $this->logFailure("migration:$name", $e);
+                $this->runtimeLog('[Mirza db] migration ' . $name . ': FAILED - ' . $e->getMessage());
             }
+        }
+    }
+
+    private function runtimeLog(string $message): void
+    {
+        if (PHP_SAPI === 'cli' && defined('STDERR')) {
+            fwrite(STDERR, $message . PHP_EOL);
+        } else {
+            error_log($message);
         }
     }
 
