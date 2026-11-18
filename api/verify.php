@@ -104,6 +104,34 @@ function validate_telegram_init_data($rawData, string $botToken): array
     $calculatedHash = hash_hmac('sha256', $dataCheckString, $secretKey);
 
     if (!hash_equals($calculatedHash, $receivedHash)) {
+        // Safe diagnostics only: never log the bot token, initData, user ID, or hashes.
+        $tokenFingerprint = substr(hash('sha256', $botToken), 0, 12);
+        $botIdentity = 'unavailable';
+        if ($botToken !== '' && function_exists('curl_init')) {
+            $ch = curl_init('https://api.telegram.org/bot' . $botToken . '/getMe');
+            curl_setopt_array($ch, [
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_CONNECTTIMEOUT => 3,
+                CURLOPT_TIMEOUT => 5,
+                CURLOPT_SSL_VERIFYPEER => true,
+            ]);
+            $identityResponse = curl_exec($ch);
+            curl_close($ch);
+            if (is_string($identityResponse)) {
+                $identityData = json_decode($identityResponse, true);
+                if (!empty($identityData['ok']) && !empty($identityData['result'])) {
+                    $botIdentity = '@' . ($identityData['result']['username'] ?? 'unknown')
+                        . ' (id ' . ($identityData['result']['id'] ?? 'unknown') . ')';
+                } else {
+                    $botIdentity = 'Telegram getMe rejected the configured token';
+                }
+            }
+        }
+        error_log('[Mirza verify] HMAC mismatch; token_fp=' . $tokenFingerprint
+            . '; bot=' . $botIdentity
+            . '; init_length=' . (is_string($rawData) ? strlen($rawData) : -1)
+            . '; fields=' . implode(',', array_keys($initData))
+            . '; received_hash_length=' . strlen($receivedHash));
         throw new RuntimeException('User verification failed');
     }
 
