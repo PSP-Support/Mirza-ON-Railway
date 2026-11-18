@@ -1130,8 +1130,8 @@ elseif ($datain == "systemsms") {
             'type' => "unpinmessage",
             "id_message" => $message_id['result']['message_id']
         ));
-        file_put_contents("cronbot/users.json", $userlist);
-        file_put_contents('cronbot/info', $dataunpin);
+        require_once __DIR__ . '/cronbot/broadcast_queue.php';
+        mirza_broadcast_create($pdo, json_decode($dataunpin, true), json_decode($userlist, true) ?: []);
     } elseif ($typeservice == "sendmessage") {
         if ($agent == "all") {
             if ($typeusermessage == "all") {
