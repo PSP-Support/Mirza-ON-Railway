@@ -99,7 +99,8 @@ function validate_telegram_init_data($rawData, string $botToken): array
     sort($dataCheckArray, SORT_STRING);
     $dataCheckString = implode("\n", $dataCheckArray);
 
-    $secretKey = hash_hmac('sha256', $botToken, 'WebAppData', true);
+    // Telegram WebApp: HMAC key is the bot token; message is the literal WebAppData.
+    $secretKey = hash_hmac('sha256', 'WebAppData', $botToken, true);
     $calculatedHash = hash_hmac('sha256', $dataCheckString, $secretKey);
 
     if (!hash_equals($calculatedHash, $receivedHash)) {
