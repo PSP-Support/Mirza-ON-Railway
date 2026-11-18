@@ -71,16 +71,15 @@ function validate_telegram_init_data($rawData, string $botToken): array
         throw new InvalidArgumentException('Telegram init data payload is empty');
     }
 
-    if (!isset($initData['hash'])) {
-        throw new InvalidArgumentException('Telegram init data is missing required signature');
-    }
-
-    $receivedHash = (string) $initData['hash'];
-    unset($initData['hash']);
+    // Telegram normally supplies "hash" for bot-owner HMAC validation.
+    // Some launch contexts also supply only "signature", which uses Telegram's
+    // public Ed25519 key and the bot ID (third-party validation format).
+    $receivedHash = isset($initData['hash']) ? (string) $initData['hash'] : '';
+    $receivedSignature = isset($initData['signature']) ? (string) $initData['signature'] : '';
 
     $dataCheckArray = [];
     foreach ($initData as $key => $value) {
-        if ($value === null) {
+        if ($key === 'hash' || $key === 'signature' || $value === null) {
             continue;
         }
 
@@ -99,39 +98,39 @@ function validate_telegram_init_data($rawData, string $botToken): array
     sort($dataCheckArray, SORT_STRING);
     $dataCheckString = implode("\n", $dataCheckArray);
 
-    // Telegram WebApp: HMAC key is the bot token; message is the literal WebAppData.
-    $secretKey = hash_hmac('sha256', 'WebAppData', $botToken, true);
-    $calculatedHash = hash_hmac('sha256', $dataCheckString, $secretKey);
+    $isValid = false;
+    if ($receivedHash !== '') {
+        // Telegram WebApp HMAC validation for bot owners.
+        $secretKey = hash_hmac('sha256', 'WebAppData', $botToken, true);
+        $calculatedHash = hash_hmac('sha256', $dataCheckString, $secretKey);
+        $isValid = hash_equals($calculatedHash, $receivedHash);
+    } elseif ($receivedSignature !== '') {
+        // Telegram Ed25519 third-party signature validation.
+        $botId = explode(':', $botToken, 2)[0];
+        $publicKeyHex = 'e7bf03a2fa4602af4580703d88dda5bb59f32ed8b02a56c187fe7d34caed242d';
+        $signatureData = strtr($receivedSignature, '-_', '+/');
+        $signatureData .= str_repeat('=', (4 - strlen($signatureData) % 4) % 4);
+        $signature = base64_decode($signatureData, true);
 
-    if (!hash_equals($calculatedHash, $receivedHash)) {
-        // Safe diagnostics only: never log the bot token, initData, user ID, or hashes.
-        $tokenFingerprint = substr(hash('sha256', $botToken), 0, 12);
-        $botIdentity = 'unavailable';
-        if ($botToken !== '' && function_exists('curl_init')) {
-            $ch = curl_init('https://api.telegram.org/bot' . $botToken . '/getMe');
-            curl_setopt_array($ch, [
-                CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_CONNECTTIMEOUT => 3,
-                CURLOPT_TIMEOUT => 5,
-                CURLOPT_SSL_VERIFYPEER => true,
-            ]);
-            $identityResponse = curl_exec($ch);
-            curl_close($ch);
-            if (is_string($identityResponse)) {
-                $identityData = json_decode($identityResponse, true);
-                if (!empty($identityData['ok']) && !empty($identityData['result'])) {
-                    $botIdentity = '@' . ($identityData['result']['username'] ?? 'unknown')
-                        . ' (id ' . ($identityData['result']['id'] ?? 'unknown') . ')';
-                } else {
-                    $botIdentity = 'Telegram getMe rejected the configured token';
-                }
-            }
+        if (ctype_digit($botId)
+            && is_string($signature)
+            && strlen($signature) === SODIUM_CRYPTO_SIGN_BYTES
+            && function_exists('sodium_crypto_sign_verify_detached')) {
+            $signatureCheckString = $botId . ":WebAppData\n" . $dataCheckString;
+            $publicKey = hex2bin($publicKeyHex);
+            $isValid = sodium_crypto_sign_verify_detached($signature, $signatureCheckString, $publicKey);
         }
-        error_log('[Mirza verify] HMAC mismatch; token_fp=' . $tokenFingerprint
-            . '; bot=' . $botIdentity
-            . '; init_length=' . (is_string($rawData) ? strlen($rawData) : -1)
+    } else {
+        throw new InvalidArgumentException('Telegram init data is missing required signature');
+    }
+
+    if (!$isValid) {
+        // Safe diagnostics only: never log the bot token, initData, user ID, or signatures.
+        error_log('[Mirza verify] Telegram signature validation failed; init_length='
+            . (is_string($rawData) ? strlen($rawData) : -1)
             . '; fields=' . implode(',', array_keys($initData))
-            . '; received_hash_length=' . strlen($receivedHash));
+            . '; has_hash=' . ($receivedHash !== '' ? 'yes' : 'no')
+            . '; has_signature=' . ($receivedSignature !== '' ? 'yes' : 'no'));
         throw new RuntimeException('User verification failed');
     }
 
