@@ -5,16 +5,31 @@ require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../botapi.php';
 require_once __DIR__ . '/../function.php';
 $textbotlang = languagechange();
-if(!is_file('info'))return;
-if(!is_file('users.json'))return;
-
-
-$userid = json_decode(file_get_contents('users.json'));
-if(is_file('info')){
-$info = json_decode(file_get_contents('info'),true);
+if (!is_file('info')) {
+    error_log('[Mirza broadcast] STOP: cronbot/info is missing; no active queue metadata.');
+    return;
 }
+if (!is_file('users.json')) {
+    error_log('[Mirza broadcast] STOP: cronbot/users.json is missing; queue list was not created.');
+    return;
+}
+
+$usersRaw = file_get_contents('users.json');
+$infoRaw = file_get_contents('info');
+$userid = json_decode((string) $usersRaw);
+$info = json_decode((string) $infoRaw, true);
+if (!is_array($userid)) {
+    error_log('[Mirza broadcast] ERROR: users.json is not a valid JSON array; JSON error=' . json_last_error_msg());
+    return;
+}
+if (!is_array($info)) {
+    error_log('[Mirza broadcast] ERROR: info is not valid JSON; JSON error=' . json_last_error_msg());
+    return;
+}
+error_log('[Mirza broadcast] queue loaded; remaining=' . count($userid) . '; type=' . ($info['type'] ?? 'missing') . '; required_fields=' . (isset($info['id_admin'], $info['id_message'], $info['message'], $info['btnmessage']) ? 'yes' : 'no'));
 $count = 0;
-if(count($userid) == 0){
+if (count($userid) === 0) {
+    error_log('[Mirza broadcast] queue is empty; sending completion notice and cleaning queue files.');
     if(isset($info['id_admin'])){
     deletemessage($info['id_admin'], $info['id_message']);
     sendmessage($info['id_admin'], $textbotlang['Admin']['messageBulk']['done'], null, 'HTML');
@@ -76,6 +91,9 @@ $keyboardaddbalance = json_encode([
             ],
         ]
     ]);
+$batchStartCount = count($userid);
+$sentOk = 0;
+$sendFailed = 0;
 for ($i = 0; $i < 20; $i++) {
     if (!isset($userid[0])) {
         break;
@@ -102,6 +120,14 @@ for ($i = 0; $i < 20; $i++) {
             $meesage = sendmessage($iduser->id, $info['message'], $keyboardaddbalance, 'HTML');
         }
 
+        if (!is_array($meesage) || empty($meesage['ok'])) {
+            $sendFailed++;
+            $apiDescription = is_array($meesage) ? (string) ($meesage['description'] ?? 'unknown Telegram API error') : 'invalid API response';
+            error_log('[Mirza broadcast] Telegram send failed: ' . substr($apiDescription, 0, 180));
+        } else {
+            $sentOk++;
+        }
+
         if ($meesage['ok'] == false and $meesage['description'] == "Forbidden: bot was blocked by the user") {
             $invoicecount = select("invoice", "*", "id_user", $iduser->id, "count");
             $userinfo = select("user", "Balance", "id", $iduser->id, "select");
@@ -123,4 +149,5 @@ for ($i = 0; $i < 20; $i++) {
     }
 }
 
-file_put_contents('users.json',json_encode($userid,true));
+file_put_contents('users.json', json_encode($userid, true));
+error_log('[Mirza broadcast] batch finished; processed=' . ($batchStartCount - count($userid)) . '; sent_ok=' . $sentOk . '; send_failed=' . $sendFailed . '; remaining=' . count($userid));
