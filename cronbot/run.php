@@ -33,16 +33,22 @@ error_log('[Mirza cron] PHP CLI ' . $cronStatus['php_cli'] . '; PDO MySQL=' . ($
 
 try {
     foreach ($cronStatus['pdo_mysql'] ? mirza_cron_jobs() : [] as $job) {
-        $script = $cronbotDir . '/' . $job['job'] . '.php';
+        $jobName = $job['job'];
+        $script = $cronbotDir . '/' . $jobName . '.php';
+        error_log('[Mirza cron] checking job: ' . $jobName);
+
         if (!is_file($script)) {
+            error_log('[Mirza cron] SKIP ' . $jobName . ': script not found');
             continue;
         }
 
         if (!mirza_cron_is_due($job['schedule'], $dispatchNow)) {
+            error_log('[Mirza cron] SKIP ' . $jobName . ': schedule not due');
             continue;
         }
 
-        if (date('YmdHi', (int) ($cronStatus['jobs'][$job['job']]['time'] ?? 0)) === $dispatchNow->format('YmdHi')) {
+        if (date('YmdHi', (int) ($cronStatus['jobs'][$jobName]['time'] ?? 0)) === $dispatchNow->format('YmdHi')) {
+            error_log('[Mirza cron] SKIP ' . $jobName . ': already ran this minute');
             continue;
         }
 
@@ -61,18 +67,20 @@ try {
         $jobError = null;
         $jobStart = time();
         try {
-            if ($job['job'] === 'sendmessage') {
+            error_log('[Mirza cron] RUN ' . $jobName);
+            if ($jobName === 'sendmessage') {
                 error_log('[Mirza cron] starting broadcast queue worker');
             }
             include $script;
-            if ($job['job'] === 'sendmessage') {
+            if ($jobName === 'sendmessage') {
                 error_log('[Mirza cron] broadcast queue worker finished');
             }
+            error_log('[Mirza cron] DONE ' . $jobName);
         } catch (Throwable $e) {
             $jobError = $e->getMessage();
-            error_log('[Mirza cron] ERROR in ' . $job['job'] . ': ' . $jobError);
+            error_log('[Mirza cron] ERROR in ' . $jobName . ': ' . $jobError);
         }
-        $cronStatus['jobs'][$job['job']] = ['time' => $jobStart, 'error' => $jobError];
+        $cronStatus['jobs'][$jobName] = ['time' => $jobStart, 'error' => $jobError];
     }
 } finally {
     @mkdir(dirname($cronStatusFile), 0775, true);
