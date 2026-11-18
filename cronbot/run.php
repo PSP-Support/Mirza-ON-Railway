@@ -4,16 +4,19 @@ declare(strict_types=1);
 
 $cronbotDir = __DIR__;
 chdir($cronbotDir);
-ini_set('error_log', 'error_log');
+ini_set('error_log', '/dev/stderr');
+error_log('[Mirza cron] dispatcher started');
 date_default_timezone_set('Asia/Tehran');
 
 require_once $cronbotDir . '/jobs.php';
 
 $lockFh = fopen($cronbotDir . '/.run.lock', 'c+');
 if ($lockFh === false) {
+    error_log('[Mirza cron] ERROR: cannot open dispatcher lock');
     exit(1);
 }
 if (!flock($lockFh, LOCK_EX | LOCK_NB)) {
+    error_log('[Mirza cron] another dispatcher is already running; skipping tick');
     fclose($lockFh);
     exit(0);
 }
@@ -26,6 +29,7 @@ $cronStatus['dispatcher'] = time();
 $dispatchNow = new DateTimeImmutable('now');
 $cronStatus['php_cli'] = PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION;
 $cronStatus['pdo_mysql'] = extension_loaded('pdo_mysql');
+error_log('[Mirza cron] PHP CLI ' . $cronStatus['php_cli'] . '; PDO MySQL=' . ($cronStatus['pdo_mysql'] ? 'yes' : 'no'));
 
 try {
     foreach ($cronStatus['pdo_mysql'] ? mirza_cron_jobs() : [] as $job) {
@@ -57,10 +61,16 @@ try {
         $jobError = null;
         $jobStart = time();
         try {
+            if ($job['job'] === 'sendmessage') {
+                error_log('[Mirza cron] starting broadcast queue worker');
+            }
             include $script;
+            if ($job['job'] === 'sendmessage') {
+                error_log('[Mirza cron] broadcast queue worker finished');
+            }
         } catch (Throwable $e) {
             $jobError = $e->getMessage();
-            error_log('mirza cron: ' . $job['job'] . ': ' . $jobError);
+            error_log('[Mirza cron] ERROR in ' . $job['job'] . ': ' . $jobError);
         }
         $cronStatus['jobs'][$job['job']] = ['time' => $jobStart, 'error' => $jobError];
     }
