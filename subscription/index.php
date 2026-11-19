@@ -44,17 +44,58 @@ try {
 <html lang="fa" dir="rtl">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#071525">
+<meta name="theme-color" content="#050805">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Vazirmatn:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <title>NM TUNNEL | پنل اشتراک</title>
 <style>
-:root{color-scheme:dark;--bg:#071525;--panel:#0d2034;--line:#1d3852;--muted:#9bb0c4;--white:#f3f7fb;--cyan:#42d6c5;--blue:#3d8bff}
-*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 85% -10%,#16435a 0,transparent 42%),linear-gradient(145deg,#06111e,#0a1b2d 55%,#071525);color:var(--white);font-family:Tahoma,Arial,sans-serif;min-height:100vh;padding:32px 16px}
-.wrap{max-width:900px;margin:auto}.top{display:flex;align-items:center;justify-content:space-between;margin-bottom:26px}.brand{display:flex;gap:13px;align-items:center}.logo{width:48px;height:48px;border-radius:15px;background:linear-gradient(135deg,var(--cyan),#247caa);display:grid;place-items:center;color:#041923;font-weight:900;font-size:19px;box-shadow:0 8px 28px #42d6c533}.brand b{letter-spacing:2px;font-size:19px}.brand small{display:block;color:var(--muted);font-size:11px;margin-top:5px;letter-spacing:1px}.secure{font-size:12px;color:var(--muted);border:1px solid var(--line);border-radius:30px;padding:9px 13px}.hero,.card{background:linear-gradient(145deg,#10263b,#0b1b2c);border:1px solid var(--line);border-radius:22px;box-shadow:0 18px 55px #0003}.hero{padding:30px;margin-bottom:17px;position:relative;overflow:hidden}.hero:after{content:"NM";position:absolute;left:20px;bottom:-40px;font-size:150px;font-weight:900;color:#ffffff08;pointer-events:none}.eyebrow{color:var(--cyan);font-size:12px;letter-spacing:1px}.hero h1{font-size:25px;margin:12px 0 8px}.hero p{color:var(--muted);margin:0;font-size:13px;line-height:2}.status{display:inline-flex;align-items:center;gap:8px;margin-top:20px;padding:9px 13px;border-radius:30px;background:#42d6c51a;color:var(--cyan);font-size:12px}.status.off{background:#ff77771a;color:#ff9999}.dot{width:7px;height:7px;border-radius:50%;background:currentColor}.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:17px}.card{padding:21px}.card h2{font-size:14px;margin:0 0 17px}.metric{color:var(--muted);font-size:11px;margin-bottom:8px}.value{font-size:17px;font-weight:700;direction:ltr;text-align:right}.bar{height:8px;background:#1a344c;border-radius:20px;overflow:hidden;margin-top:13px}.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--blue),var(--cyan));border-radius:20px}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}.btn{border:0;border-radius:12px;padding:13px 17px;font-weight:700;font-size:13px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:8px}.primary{background:linear-gradient(100deg,#42d6c5,#39a8d9);color:#041923}.secondary{background:#142d44;border:1px solid #29455e;color:var(--white)}.servers{display:grid;gap:10px}.server{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:13px 14px;border:1px solid var(--line);border-radius:13px;background:#091a2a}.server strong{font-size:12px;direction:ltr;overflow-wrap:anywhere}.server span{font-size:11px;color:var(--muted);white-space:nowrap}.footer{text-align:center;color:#6f879e;font-size:11px;padding:24px 0 5px;line-height:2}
-@media(max-width:600px){body{padding:22px 12px}.hero{padding:23px}.hero h1{font-size:21px}.grid{grid-template-columns:1fr}.top{align-items:flex-start}.secure{font-size:10px}.actions .btn{flex:1}}
+:root{color-scheme:dark;--bg:#050805;--panel:#0b100b;--panel2:#101810;--line:#263b25;--muted:#91a08c;--white:#f1f7ee;--green:#b7ff35;--green2:#75d927;--danger:#ff7777}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;padding:30px 16px;color:var(--white);font-family:'Vazirmatn',Tahoma,sans-serif;background-color:var(--bg);background-image:radial-gradient(#a7ff3210 1px,transparent 1px),linear-gradient(135deg,#050805,#0a1009 55%,#050805);background-size:6px 6px,auto}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;background:linear-gradient(transparent 50%,#00000012 50%);background-size:100% 4px;opacity:.25;z-index:0}
+.wrap{position:relative;z-index:1;max-width:920px;margin:auto}
+.top{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
+.brand{display:flex;gap:13px;align-items:center}
+.logo{width:52px;height:52px;border:1px solid var(--green);background:#0c1609;display:grid;place-items:center;color:var(--green);font-family:'Share Tech Mono',monospace;font-weight:900;font-size:19px;box-shadow:0 0 22px #a7ff3225;clip-path:polygon(0 0,100% 0,100% 76%,76% 100%,0 100%)}
+.brand b{font-family:'Share Tech Mono','Vazirmatn',sans-serif;letter-spacing:2px;font-size:20px;color:var(--green)}
+.brand small{display:block;color:var(--muted);font-family:'Share Tech Mono',sans-serif;font-size:10px;margin-top:4px;letter-spacing:1.5px}
+.secure{font-size:11px;color:var(--green);border:1px solid #38542c;padding:8px 12px;background:#a7ff3208;font-family:'Share Tech Mono','Vazirmatn',sans-serif;letter-spacing:.4px}
+.hero,.card{background:linear-gradient(145deg,#101810,#090e09);border:1px solid var(--line);box-shadow:0 14px 40px #0008}
+.hero{padding:30px;margin-bottom:15px;position:relative;overflow:hidden}
+.hero:before{content:"";position:absolute;inset:0 auto 0 0;width:4px;background:var(--green);box-shadow:0 0 18px var(--green)}
+.hero:after{content:"NM";position:absolute;left:24px;bottom:-46px;font-family:'Share Tech Mono',monospace;font-size:160px;font-weight:900;color:#b7ff3509;pointer-events:none}
+.eyebrow{color:var(--green);font-family:'Share Tech Mono',sans-serif;font-size:12px;letter-spacing:2px}
+.hero h1{font-size:26px;margin:12px 0 8px;font-weight:800}
+.hero p{color:var(--muted);margin:0;font-size:13px;line-height:2}
+.status{display:inline-flex;align-items:center;gap:9px;margin-top:19px;padding:8px 12px;border:1px solid #45652c;background:#a7ff3210;color:var(--green);font-size:12px}
+.status.off{border-color:#633434;background:#ff777710;color:#ff9999}
+.dot{width:8px;height:8px;background:currentColor;box-shadow:0 0 10px currentColor;animation:pulse 1.7s steps(2,end) infinite}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:15px}
+.card{padding:20px;transition:transform .2s,border-color .2s,background .2s}
+.card:hover{transform:translateY(-3px);border-color:#83b943;background:linear-gradient(145deg,#142014,#0a1009)}
+.card h2{font-size:14px;margin:0 0 15px;color:var(--green);font-weight:700}
+.metric{color:var(--muted);font-size:11px;margin-bottom:8px}
+.value{font-size:17px;font-weight:700;direction:ltr;text-align:right;font-family:'Share Tech Mono','Vazirmatn',sans-serif;color:var(--white)}
+.bar{height:9px;background:#1c291a;border:1px solid #31472a;overflow:hidden;margin-top:13px}
+.bar i{display:block;height:100%;background:repeating-linear-gradient(90deg,var(--green) 0 8px,#75d927 8px 11px);box-shadow:0 0 14px #a7ff3270;transition:width 1s ease}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+.btn{border:1px solid #425a31;padding:12px 17px;font-family:'Vazirmatn',sans-serif;font-weight:800;font-size:12px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:8px;transition:all .18s}
+.primary{background:var(--green);border-color:var(--green);color:#071006}
+.primary:hover{background:#d0ff83;box-shadow:0 0 22px #a7ff3245}
+.secondary{background:#101810;color:var(--white)}
+.secondary:hover{border-color:var(--green);color:var(--green)}
+.servers{display:grid;gap:9px}
+.server{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:13px 14px;border:1px solid #263b25;background:#080e08}
+.server strong{font-size:12px;direction:ltr;overflow-wrap:anywhere;font-family:'Share Tech Mono','Vazirmatn',sans-serif}
+.server span{font-size:10px;color:var(--green);white-space:nowrap;font-family:'Share Tech Mono',sans-serif;border:1px solid #38542c;padding:4px 7px}
+.footer{text-align:center;color:#71816b;font-size:10px;padding:24px 0 5px;line-height:2;font-family:'Vazirmatn',sans-serif}
+@keyframes pulse{50%{opacity:.25}}
+@media(max-width:600px){body{padding:20px 12px}.hero{padding:22px}.hero h1{font-size:21px}.grid{grid-template-columns:1fr}.top{align-items:flex-start}.secure{font-size:9px;padding:7px}.actions .btn{flex:1}.brand b{font-size:18px}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
 </style></head>
 <body><main class="wrap">
-<header class="top"><div class="brand"><div class="logo">NM</div><div><b>NM TUNNEL</b><small>SECURE CONNECTION SERVICES</small></div></div><div class="secure">● پنل اختصاصی اشتراک</div></header>
-<section class="hero"><div class="eyebrow">SUBSCRIPTION OVERVIEW</div><h1>مدیریت اشتراک شما</h1><p>وضعیت سرویس و اطلاعات اتصال خود را در این صفحه مشاهده و مدیریت کنید.</p><div class="status <?=nm_h($statusClass)?>"><i class="dot"></i><?=nm_h($statusLabel)?></div></section>
+<header class="top"><div class="brand"><div class="logo">NM</div><div><b>NM TUNNEL</b><small>SECURE CONNECTION SERVICES</small></div></div><div class="secure">■ SYSTEM ONLINE</div></header>
+<section class="hero"><div class="eyebrow">[ NM SYSTEM // SUBSCRIPTION ]</div><h1>مدیریت اشتراک شما</h1><p>وضعیت سرویس و اطلاعات اتصال خود را در این صفحه مشاهده و مدیریت کنید.</p><div class="status <?=nm_h($statusClass)?>"><i class="dot"></i><?=nm_h($statusLabel)?></div></section>
 <section class="grid">
 <div class="card"><div class="metric">نام کاربری سرویس</div><div class="value"><?=nm_h($invoice['username'] ?? '—')?></div></div>
 <div class="card"><div class="metric">موقعیت سرویس</div><div class="value"><?=nm_h($invoice['Service_location'] ?? '—')?></div></div>
@@ -65,7 +106,7 @@ try {
 </section>
 <section class="card"><h2>مدیریت لینک اشتراک</h2><div class="metric">این لینک را در برنامه کلاینت خود به‌عنوان Subscription وارد کنید.</div><div class="actions"><button class="btn primary" id="copy">کپی لینک اشتراک</button><a class="btn secondary" href="<?=nm_h($rawUrl)?>" target="_blank" rel="noopener">مشاهده خروجی خام</a><button class="btn secondary" id="refresh">به‌روزرسانی اطلاعات</button></div></section>
 <section class="card" style="margin-top:17px"><h2>سرورهای موجود در اشتراک</h2><div class="servers"><?php if (!$links): ?><div class="metric">در حال حاضر کانفیگی برای نمایش موجود نیست.</div><?php else: foreach ($links as $i=>$link): $fragment=parse_url($link, PHP_URL_FRAGMENT); $proto=strtoupper((string)strtok($link, ':')); ?><div class="server"><strong><?=nm_h($fragment ?: ('سرور '.($i+1)))?></strong><span><?=nm_h($proto)?></span></div><?php endforeach; endif; ?></div></section>
-<footer class="footer">NM TUNNEL · پنل رسمی مدیریت اشتراک<br>برای حفظ امنیت، لینک اشتراک خود را در اختیار دیگران قرار ندهید.</footer>
+<footer class="footer">NM TUNNEL · OFFICIAL SUBSCRIPTION INTERFACE<br>برای حفظ امنیت، لینک اشتراک خود را در اختیار دیگران قرار ندهید.</footer>
 </main>
 <script>
 const subUrl = <?=json_encode($rawUrl, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE)?>;
