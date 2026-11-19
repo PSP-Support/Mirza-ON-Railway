@@ -29,6 +29,29 @@ if (!preg_match('~(?:^|/)sub/([a-f0-9]{4,64})/?$~i', $path, $matches)) {
 }
 $token = strtolower($matches[1]);
 
+// One public URL serves both interfaces:
+// - A normal browser request receives the NM TUNNEL HTML dashboard.
+// - v2rayNG sends User-Agent: v2rayNG/<version> and receives plain-text share links.
+// Other non-browser clients default to the plain subscription response for compatibility.
+$userAgent = (string)($_SERVER['HTTP_USER_AGENT'] ?? '');
+$accept = (string)($_SERVER['HTTP_ACCEPT'] ?? '');
+$fetchDest = strtolower((string)($_SERVER['HTTP_SEC_FETCH_DEST'] ?? ''));
+$isV2rayNg = stripos($userAgent, 'v2rayNG/') !== false;
+$isBrowser = !$isV2rayNg && (
+    $fetchDest === 'document' ||
+    stripos($accept, 'text/html') !== false ||
+    preg_match('/\\b(Mozilla|Chrome|Safari|Firefox|Edg)\\b/i', $userAgent) === 1
+);
+
+header('Vary: User-Agent, Accept, Sec-Fetch-Dest');
+header('X-Robots-Tag: noindex, nofollow');
+
+if ($isBrowser) {
+    $_GET['id'] = $token;
+    require __DIR__ . '/../subscription/index.php';
+    exit;
+}
+
 try {
     $invoice = select('invoice', '*', 'id_invoice', $token, 'select');
 
@@ -96,7 +119,7 @@ try {
     if ($domainhosts !== '') {
         header('Profile-Title: NM TUNNEL');
         header('Support-Url: https://t.me/NM_Tunnel');
-        header('Profile-Web-Page-Url: ' . $siteBase . '/s/' . rawurlencode($token));
+        header('Profile-Web-Page-Url: ' . $siteBase . '/sub/' . rawurlencode($token));
     }
 
     // Standard newline-separated URI list. v2rayNG parses both raw URI lists and Base64 lists.
