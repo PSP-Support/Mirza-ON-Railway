@@ -54,10 +54,11 @@ try {
         nm_sub_response(502, "ساختار کانفیگ‌های اشتراک معتبر نیست.\n");
     }
 
+    // Schemes supported by v2rayNG's current config parser.
     $supportedSchemes = [
-        'vless://', 'vmess://', 'trojan://', 'ss://', 'shadowsocks://',
-        'socks://', 'hysteria://', 'hysteria2://', 'hy2://', 'tuic://',
-        'wireguard://', 'anytls://'
+        'vless://', 'vmess://', 'trojan://', 'ss://',
+        'socks://', 'socks4://', 'socks5://',
+        'wireguard://', 'hysteria2://', 'hy2://', 'masque://'
     ];
 
     $configs = [];
