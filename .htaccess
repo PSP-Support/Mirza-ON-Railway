@@ -3,3 +3,6 @@ RewriteEngine On
 # Route dedicated subscription URLs to the subscription endpoint.
 # Keep the original REQUEST_URI so sub/index.php can read the token.
 RewriteRule ^sub/([a-fA-F0-9]{4,64})/?$ sub/index.php [END]
+
+# NM Tunnel branded subscription dashboard (separate from raw client subscription).
+RewriteRule ^s/([a-fA-F0-9]{4,64})/?$ subscription/index.php?id=$1 [END,QSA]
