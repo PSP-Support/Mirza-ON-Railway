@@ -94,7 +94,7 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background:lin
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
 </style></head>
 <body><main class="wrap">
-<header class="top"><div class="brand"><div class="logo">NM</div><div><b>NM TUNNEL</b><small>SECURE CONNECTION SERVICES</small></div></div><div class="secure">■ SYSTEM ONLINE</div></header><div class="social"><a href="https://t.me/NmTunnel_bot" target="_blank">@NmTunnel_bot</a><a href="https://t.me/NM_Tunnel" target="_blank">@NM_Tunnel</a></div>
+<header class="top"><div class="brand"><div class="logo">NM</div><div><b>NM TUNNEL</b><small>SECURE CONNECTION SERVICES</small></div></div><div class="secure">■ SYSTEM ONLINE</div></header><div class="social"><a href="https://t.me/NmTunnel_bot" target="_blank" rel="noopener noreferrer">@NmTunnel_bot</a><a href="https://t.me/NM_Tunnel" target="_blank" rel="noopener noreferrer">@NM_Tunnel</a></div>
 <section class="hero"><div class="eyebrow">[ NM SYSTEM // SUBSCRIPTION ]</div><h1>مدیریت اشتراک شما</h1><p>وضعیت سرویس و اطلاعات اتصال خود را در این صفحه مشاهده و مدیریت کنید.</p><div class="status <?=nm_h($statusClass)?>"><i class="dot"></i><?=nm_h($statusLabel)?></div></section>
 
 
@@ -125,57 +125,231 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background:lin
 </main>
 <script src="https://unpkg.com/globe.gl"></script>
 <script>
-document.querySelectorAll('.tab').forEach(btn=>btn.addEventListener('click',()=>{
- document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t===btn));
- document.querySelectorAll('.tab-content').forEach(p=>p.classList.toggle('active',p.id===btn.dataset.panel));
+'use strict';
+
+document.querySelectorAll('.tab').forEach(btn => btn.addEventListener('click', () => {
+ document.querySelectorAll('.tab').forEach(tab => tab.classList.toggle('active', tab === btn));
+ document.querySelectorAll('.tab-content').forEach(panel => panel.classList.toggle('active', panel.id === btn.dataset.panel));
 }));
-const subUrl=<?=json_encode($rawUrl, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE)?>;
-document.getElementById('copySub').addEventListener('click',async()=>{const b=document.getElementById('copySub');try{await navigator.clipboard.writeText(subUrl);b.textContent='کپی شد ✓';}catch(e){prompt('لینک اشتراک:',subUrl);}});
-document.getElementById('refresh').addEventListener('click',()=>location.reload());
-document.querySelectorAll('.copy-config').forEach(btn=>btn.addEventListener('click',async()=>{
- const value=btn.dataset.config;try{await navigator.clipboard.writeText(value);btn.textContent='کپی شد ✓';setTimeout(()=>btn.textContent='کپی کانفیگ',1600);}catch(e){prompt('کپی کانفیگ:',value);}
+
+const subscriptionUrl = <?=json_encode($rawUrl, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE)?>;
+const copySubscriptionButton = document.getElementById('copySub');
+
+async function copyText(value) {
+ if (navigator.clipboard && window.isSecureContext) {
+  await navigator.clipboard.writeText(value);
+  return true;
+ }
+ const field = document.createElement('textarea');
+ field.value = value;
+ field.setAttribute('readonly', '');
+ field.style.position = 'fixed';
+ field.style.opacity = '0';
+ document.body.appendChild(field);
+ field.select();
+ let copied = false;
+ try { copied = document.execCommand('copy'); } finally { field.remove(); }
+ if (!copied) throw new Error('Clipboard unavailable');
+ return true;
+}
+
+copySubscriptionButton.addEventListener('click', async () => {
+ try {
+  await copyText(subscriptionUrl);
+  copySubscriptionButton.textContent = 'کپی شد ✓';
+  setTimeout(() => copySubscriptionButton.textContent = 'کپی لینک اشتراک', 1800);
+ } catch (error) {
+  prompt('لینک اشتراک:', subscriptionUrl);
+ }
+});
+document.getElementById('refresh').addEventListener('click', () => location.reload());
+
+document.querySelectorAll('.copy-config').forEach(button => button.addEventListener('click', async () => {
+ const originalLabel = 'کپی کانفیگ';
+ try {
+  await copyText(button.dataset.config || '');
+  button.textContent = 'کپی شد ✓';
+  setTimeout(() => button.textContent = originalLabel, 1800);
+ } catch (error) {
+  prompt('کپی کانفیگ:', button.dataset.config || '');
+ }
 }));
-function hostFromConfig(raw){
- try{
-  if(raw.startsWith('vmess://')){let b=raw.slice(8).split('#')[0].replace(/-/g,'+').replace(/_/g,'/');while(b.length%4)b+='=';const o=JSON.parse(atob(b));return o.add||o.server||o.host||'';}
-  if(raw.startsWith('vless://')||raw.startsWith('trojan://')||raw.startsWith('ss://')||raw.startsWith('http://')||raw.startsWith('https://'))return new URL(raw).hostname;
-  if(raw.startsWith('hysteria2://')||raw.startsWith('hy2://'))return new URL(raw).hostname;
- }catch(e){}
+
+function decodeBase64Url(value) {
+ let normalized = value.replace(/-/g, '+').replace(/_/g, '/');
+ while (normalized.length % 4) normalized += '=';
+ return atob(normalized);
+}
+
+function hostFromConfig(rawValue) {
+ const raw = String(rawValue || '').trim();
+ try {
+  const lower = raw.toLowerCase();
+  if (lower.startsWith('vmess://')) {
+   const payload = raw.slice(raw.indexOf('://') + 3).split('#')[0];
+   const data = JSON.parse(decodeBase64Url(payload));
+   return String(data.add || data.server || data.host || '').replace(/^\[|\]$/g, '');
+  }
+  if (lower.startsWith('ss://')) {
+   const body = raw.slice(raw.indexOf('://') + 3).split(/[?#]/)[0];
+   const at = body.lastIndexOf('@');
+   if (at < 0) {
+    try {
+     const decoded = decodeBase64Url(body);
+     const match = decoded.match(/@([^:]+|\[[^\]]+\]):\d+/);
+     if (match) return match[1].replace(/^\[|\]$/g, '');
+    } catch (error) {}
+   }
+  }
+  const parsed = new URL(raw);
+  return String(parsed.hostname || '').replace(/^\[|\]$/g, '');
+ } catch (error) {
+  return '';
+ }
+}
+
+async function fetchJson(url, timeoutMs = 6500) {
+ const controller = new AbortController();
+ const timer = setTimeout(() => controller.abort(), timeoutMs);
+ try {
+  const response = await fetch(url, { signal: controller.signal, headers: { accept: 'application/json' }, cache: 'no-store' });
+  if (!response.ok) throw new Error('HTTP ' + response.status);
+  return await response.json();
+ } finally {
+  clearTimeout(timer);
+ }
+}
+
+function isPublicAddress(ip) {
+ if (/^\d{1,3}(\.\d{1,3}){3}$/.test(ip)) {
+  const p = ip.split('.').map(Number);
+  if (p.some(n => n < 0 || n > 255)) return false;
+  if (p[0] === 0 || p[0] === 10 || p[0] === 127 || p[0] >= 224) return false;
+  if (p[0] === 169 && p[1] === 254) return false;
+  if (p[0] === 172 && p[1] >= 16 && p[1] <= 31) return false;
+  if (p[0] === 192 && p[1] === 168) return false;
+  if (p[0] === 100 && p[1] >= 64 && p[1] <= 127) return false;
+  return true;
+ }
+ const v6 = ip.toLowerCase();
+ if (v6.includes(':')) {
+  if (v6 === '::' || v6 === '::1' || v6.startsWith('fe8') || v6.startsWith('fe9') ||
+      v6.startsWith('fea') || v6.startsWith('feb') || v6.startsWith('fc') ||
+      v6.startsWith('fd') || v6.startsWith('ff')) return false;
+  return true;
+ }
+ return false;
+}
+
+async function resolvePublicIp(host) {
+ if (isPublicAddress(host)) return host;
+ if (host.includes(':')) return '';
+ for (const type of ['A', 'AAAA']) {
+  try {
+   const result = await fetchJson('https://dns.google/resolve?name=' + encodeURIComponent(host) + '&type=' + type);
+   const answer = (result.Answer || []).find(item => type === 'A' ? item.type === 1 : item.type === 28);
+   if (answer && isPublicAddress(answer.data)) return answer.data;
+  } catch (error) {}
+ }
  return '';
 }
-const geoStatus=document.getElementById('geoStatus'), legend=document.getElementById('mapLegend');
-async function resolveIp(host){
- if(/^\d{1,3}(\.\d{1,3}){3}$/.test(host))return host;
- const r=await fetch('https://dns.google/resolve?name='+encodeURIComponent(host)+'&type=A',{headers:{accept:'application/dns-json'}});
- const d=await r.json();const ans=(d.Answer||[]).find(x=>x.type===1);return ans?.data||'';
+
+async function locateIp(ip) {
+ try {
+  const result = await fetchJson('https://ipwho.is/' + encodeURIComponent(ip));
+  if (result.success && Number.isFinite(Number(result.latitude)) && Number.isFinite(Number(result.longitude))) {
+   return { lat: Number(result.latitude), lng: Number(result.longitude), country: result.country || 'نامشخص' };
+  }
+ } catch (error) {}
+ try {
+  const result = await fetchJson('https://ipapi.co/' + encodeURIComponent(ip) + '/json/');
+  if (!result.error && Number.isFinite(Number(result.latitude)) && Number.isFinite(Number(result.longitude))) {
+   return { lat: Number(result.latitude), lng: Number(result.longitude), country: result.country_name || result.country || 'نامشخص' };
+  }
+ } catch (error) {}
+ return null;
 }
-async function buildGlobe(){
- const rows=[...document.querySelectorAll('.copy-config')],points=[];
- for(let i=0;i<rows.length;i++){
-  const host=hostFromConfig(rows[i].dataset.config);if(!host)continue;
-  try{
-   const ip=await resolveIp(host);if(!ip)continue;
-   const response=await fetch('https://ipwho.is/'+encodeURIComponent(ip));const data=await response.json();
-   if(data.success&&Number.isFinite(+data.latitude)&&Number.isFinite(+data.longitude)){
-    points.push({lat:+data.latitude,lng:+data.longitude,name:rows[i].closest('.config-row').querySelector('strong').textContent,country:data.country||'نامشخص'});
-   }
-  }catch(e){}
+
+const geoStatus = document.getElementById('geoStatus');
+const legend = document.getElementById('mapLegend');
+
+async function buildGlobe() {
+ const buttons = [...document.querySelectorAll('.copy-config')];
+ const points = [];
+ let nextIndex = 0;
+
+ async function worker() {
+  while (nextIndex < buttons.length) {
+   const index = nextIndex++;
+   const button = buttons[index];
+   const host = hostFromConfig(button.dataset.config);
+   if (!host) continue;
+   try {
+    const ip = await resolvePublicIp(host);
+    if (!ip) continue;
+    const location = await locateIp(ip);
+    if (!location) continue;
+    const row = button.closest('.config-row');
+    const name = row ? row.querySelector('strong')?.textContent || ('کانفیگ ' + (index + 1)) : ('کانفیگ ' + (index + 1));
+    points.push({ ...location, name, ip });
+   } catch (error) {}
+  }
  }
- geoStatus.textContent=points.length+' موقعیت از '+rows.length+' کانفیگ شناسایی شد';
- if(points.length){points.forEach(p=>{const b=document.createElement('button');b.textContent=p.name+' · '+p.country;legend.appendChild(b);});}
- else legend.textContent='دامنه‌ها قابل تبدیل به موقعیت جغرافیایی نبودند؛ کره زمین همچنان نمایش داده می‌شود.';
- const el=document.getElementById('globeViz');
- if(!window.Globe){geoStatus.textContent='کتابخانه کره زمین بارگذاری نشد؛ اتصال اینترنت را بررسی کنید.';return;}
- const width=Math.max(320,el.clientWidth),height=el.clientHeight||390;
- window.nmGlobe=Globe()(el).width(width).height(height)
+ await Promise.all(Array.from({ length: Math.min(4, buttons.length) }, () => worker()));
+
+ geoStatus.textContent = points.length + ' موقعیت از ' + buttons.length + ' کانفیگ شناسایی شد';
+ if (points.length) {
+  const unique = new Map();
+  points.forEach(point => {
+   const key = point.lat.toFixed(2) + ',' + point.lng.toFixed(2);
+   if (!unique.has(key)) unique.set(key, []);
+   unique.get(key).push(point.name);
+  });
+  unique.forEach((names, coordinates) => {
+   const button = document.createElement('button');
+   const country = points.find(p => (p.lat.toFixed(2) + ',' + p.lng.toFixed(2)) === coordinates)?.country || '';
+   button.textContent = names.join('، ') + (country ? ' · ' + country : '');
+   legend.appendChild(button);
+  });
+ } else {
+  legend.textContent = 'موقعیت دقیق از IP عمومی سرورها دریافت نشد. ممکن است آدرس خصوصی، CDN یا محدودیت سرویس موقعیت‌یابی باشد.';
+ }
+
+ const globeElement = document.getElementById('globeViz');
+ if (!window.Globe) {
+  geoStatus.textContent = 'کتابخانه کره زمین بارگذاری نشد؛ اتصال اینترنت را بررسی کنید.';
+  return;
+ }
+ const width = Math.max(320, globeElement.clientWidth);
+ const height = Math.max(300, globeElement.clientHeight || 390);
+ window.nmGlobe = Globe()(globeElement)
+  .width(width)
+  .height(height)
   .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
   .bumpImageUrl('https://unpkg.com/three-globe/example/img/earth-topology.png')
-  .backgroundColor('#050805').showAtmosphere(true).atmosphereColor('#83d936').atmosphereAltitude(.18)
-  .pointsData(points).pointLat('lat').pointLng('lng').pointColor(()=> '#b7ff35').pointAltitude(.025).pointRadius(.65)
-  .pointLabel(p=>p.name+' · '+p.country);
- window.nmGlobe.pointOfView({lat:25,lng:20,altitude:2.2},0);
- window.nmGlobe.controls().autoRotate=true;window.nmGlobe.controls().autoRotateSpeed=.35;
- window.addEventListener('resize',()=>window.nmGlobe&&window.nmGlobe.width(Math.max(320,el.clientWidth)).height(el.clientHeight||390));
+  .backgroundColor('#050805')
+  .showAtmosphere(true)
+  .atmosphereColor('#83d936')
+  .atmosphereAltitude(0.18)
+  .pointsData(points)
+  .pointLat('lat')
+  .pointLng('lng')
+  .pointColor(() => '#b7ff35')
+  .pointAltitude(0.025)
+  .pointRadius(0.65)
+  .pointLabel(point => point.name + ' · ' + point.country);
+ window.nmGlobe.pointOfView({ lat: 25, lng: 20, altitude: 3.1 }, 0);
+ window.nmGlobe.controls().autoRotate = true;
+ window.nmGlobe.controls().autoRotateSpeed = 0.35;
+ window.addEventListener('resize', () => {
+  if (window.nmGlobe) {
+   window.nmGlobe.width(Math.max(320, globeElement.clientWidth));
+   window.nmGlobe.height(Math.max(300, globeElement.clientHeight || 390));
+  }
+ });
 }
-buildGlobe();
+
+buildGlobe().catch(error => {
+ geoStatus.textContent = 'در بارگذاری نقشه خطایی رخ داد.';
+});
 </script></body></html>
