@@ -88,7 +88,7 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background:lin
 .server{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:13px 14px;border:1px solid #263b25;background:#080e08}
 .server strong{font-size:12px;direction:ltr;overflow-wrap:anywhere;font-family:'Share Tech Mono','Vazirmatn',sans-serif}
 .server span{font-size:10px;color:var(--green);white-space:nowrap;font-family:'Share Tech Mono',sans-serif;border:1px solid #38542c;padding:4px 7px}
-.map-wrap{height:290px;margin-top:12px;background:#050a05;border:1px solid #294326}.map-wrap svg{width:100%;height:100%}.map-grid{stroke:#274322;stroke-dasharray:3 5;fill:none}.map-legend{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.map-legend button{background:#101810;border:1px solid #38542c;color:var(--green);padding:7px 10px;cursor:pointer}.map-marker{fill:#b7ff35;stroke:#e8ffc5;stroke-width:2;filter:drop-shadow(0 0 6px #b7ff35);cursor:pointer}.chart-head{display:flex;align-items:center;justify-content:space-between;gap:12px}.chart-head select{background:#0b130a;border:1px solid #38542c;color:var(--green);padding:7px}.chart{height:180px;margin-top:12px;border:1px solid #294326;background:repeating-linear-gradient(0deg,transparent 0 35px,#29432655 36px)}.chart svg{width:100%;height:100%}.chart-line{fill:none;stroke:#b7ff35;stroke-width:3;filter:drop-shadow(0 0 5px #b7ff35)}.chart-area{fill:url(#chartFill)}.chart-note{font-size:10px;color:#71816b;line-height:2}.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px}.tab{flex:1;min-width:110px;background:#0b130a;border:1px solid #263b25;color:var(--muted);padding:12px 10px;font:700 12px Vazirmatn;cursor:pointer}.tab.active{background:#b7ff3515;border-color:var(--green);color:var(--green);box-shadow:0 0 18px #a7ff3212}.tab-panel{display:none}.tab-panel.active{display:block}.map-wrap{height:390px;position:relative;overflow:hidden}.map-legend button{font-family:Vazirmatn,sans-serif}.server{cursor:pointer}.server:hover{border-color:var(--green)}.usage-layout{display:grid;grid-template-columns:190px 1fr;gap:24px;align-items:center}.usage-ring{width:170px;height:170px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--green) var(--usage),#263b25 0);position:relative;margin:auto;box-shadow:0 0 24px #a7ff3218}.usage-ring:before{content:"";position:absolute;inset:13px;border-radius:50%;background:#0b100b;border:1px solid #263b25}.usage-ring>div{position:relative;display:grid;text-align:center;gap:4px}.usage-ring strong{font:25px 'Share Tech Mono',sans-serif;color:var(--green)}.usage-ring small{font-size:11px;color:var(--muted)}.usage-details{display:grid;gap:10px}.usage-details>div{display:flex;justify-content:space-between;gap:12px;border-bottom:1px solid #263b25;padding:7px 0;font-size:12px}.usage-details span{color:var(--muted)}.usage-details b{color:var(--green);direction:ltr;font-family:'Share Tech Mono',sans-serif}.footer{text-align:center;color:#71816b;font-size:10px;padding:24px 0 5px;line-height:2;font-family:'Vazirmatn',sans-serif}
+.map-wrap{height:290px;margin-top:12px;background:#050a05;border:1px solid #294326}.map-wrap svg{width:100%;height:100%}.map-grid{stroke:#274322;stroke-dasharray:3 5;fill:none}.map-legend{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.map-legend button{background:#101810;border:1px solid #38542c;color:var(--green);padding:7px 10px;cursor:pointer}.map-marker{fill:#b7ff35;stroke:#e8ffc5;stroke-width:2;filter:drop-shadow(0 0 6px #b7ff35);cursor:pointer}.chart-head{display:flex;align-items:center;justify-content:space-between;gap:12px}.chart-head select{background:#0b130a;border:1px solid #38542c;color:var(--green);padding:7px}.chart{height:180px;margin-top:12px;border:1px solid #294326;background:repeating-linear-gradient(0deg,transparent 0 35px,#29432655 36px)}.chart svg{width:100%;height:100%}.chart-line{fill:none;stroke:#b7ff35;stroke-width:3;filter:drop-shadow(0 0 5px #b7ff35)}.chart-area{fill:url(#chartFill)}.chart-note{font-size:10px;color:#71816b;line-height:2}.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px}.tab{flex:1;min-width:110px;background:#0b130a;border:1px solid #263b25;color:var(--muted);padding:12px 10px;font:700 12px Vazirmatn;cursor:pointer}.tab.active{background:#b7ff3515;border-color:var(--green);color:var(--green);box-shadow:0 0 18px #a7ff3212}.tab-panel{display:none}.tab-panel.active{display:block}.map-wrap{height:390px;position:relative;overflow:hidden}.map-legend button{font-family:Vazirmatn,sans-serif}.server{cursor:pointer}.server:hover{border-color:var(--green)}.usage-layout{display:grid;grid-template-columns:190px 1fr;gap:24px;align-items:center}.usage-ring{width:170px;height:170px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--green) var(--usage),#263b25 0);position:relative;margin:auto;box-shadow:0 0 24px #a7ff3218}.usage-ring:before{content:"";position:absolute;inset:13px;border-radius:50%;background:#0b100b;border:1px solid #263b25}.usage-ring>div{position:relative;display:grid;text-align:center;gap:4px}.usage-ring strong{font:25px 'Share Tech Mono',sans-serif;color:var(--green)}.usage-ring small{font-size:11px;color:var(--muted)}.usage-details{display:grid;gap:10px}.usage-details>div{display:flex;justify-content:space-between;gap:12px;border-bottom:1px solid #263b25;padding:7px 0;font-size:12px}.usage-details span{color:var(--muted)}.usage-details b{color:var(--green);direction:ltr;font-family:'Share Tech Mono',sans-serif}.tabs{display:flex;gap:10px;margin:0 0 15px}.tab{flex:1;padding:13px;background:#0b100b;border:1px solid #263b25;color:var(--muted);font:700 13px Vazirmatn;cursor:pointer}.tab.active{border-color:var(--green);background:#b7ff3514;color:var(--green);box-shadow:0 0 18px #b7ff3512}.tab-content{display:none}.tab-content.active{display:block}.config-row{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:64px}.config-row strong{font-size:14px;color:var(--white);font-family:Vazirmatn,sans-serif;overflow-wrap:anywhere}.config-row .btn{flex-shrink:0;padding:9px 14px}.servers{display:grid;gap:9px}.map-wrap{height:390px;width:100%;position:relative;overflow:hidden}.map-wrap canvas{display:block;width:100%!important;height:100%!important}.map-legend button{font-family:Vazirmatn,sans-serif}.footer{text-align:center;color:#71816b;font-size:10px;padding:24px 0 5px;line-height:2;font-family:'Vazirmatn',sans-serif}
 @keyframes pulse{50%{opacity:.25}}
 @media(max-width:600px){.usage-layout{grid-template-columns:1fr}.usage-details{width:100%}body{padding:20px 12px}.hero{padding:22px}.hero h1{font-size:21px}.grid{grid-template-columns:1fr}.top{align-items:flex-start}.secure{font-size:9px;padding:7px}.actions .btn{flex:1}.brand b{font-size:18px}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
@@ -97,6 +97,12 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background:lin
 <header class="top"><div class="brand"><div class="logo">NM</div><div><b>NM TUNNEL</b><small>SECURE CONNECTION SERVICES</small></div></div><div class="secure">■ SYSTEM ONLINE</div></header><div class="social"><a href="https://t.me/NmTunnel_bot" target="_blank">@NmTunnel_bot</a><a href="https://t.me/NM_Tunnel" target="_blank">@NM_Tunnel</a></div>
 <section class="hero"><div class="eyebrow">[ NM SYSTEM // SUBSCRIPTION ]</div><h1>مدیریت اشتراک شما</h1><p>وضعیت سرویس و اطلاعات اتصال خود را در این صفحه مشاهده و مدیریت کنید.</p><div class="status <?=nm_h($statusClass)?>"><i class="dot"></i><?=nm_h($statusLabel)?></div></section>
 
+
+<nav class="tabs" aria-label="بخش‌های اشتراک">
+ <button type="button" class="tab active" data-panel="mainPanel">نمای کلی</button>
+ <button type="button" class="tab" data-panel="configPanel">کانفیگ‌ها (<?=count($links)?>)</button>
+</nav>
+<div id="mainPanel" class="tab-content active">
 <section class="grid">
 <div class="card"><div class="metric">نام کاربری سرویس</div><div class="value"><?=nm_h($invoice['username'] ?? '—')?></div></div>
 <div class="card"><div class="metric">موقعیت سرویس</div><div class="value"><?=nm_h($invoice['Service_location'] ?? '—')?></div></div>
@@ -105,57 +111,71 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background:lin
 <div class="card square-metric"><div class="metric">تعداد کانفیگ‌ها</div><div class="value"><?=count($links)?></div></div>
 <div class="card square-metric"><div class="metric">تاریخ انقضا</div><div class="value"><?=nm_h(nm_date($info['expire'] ?? null))?></div></div>
 </section>
-<section class="card" style="margin-top:15px"><h2>مصرف فعلی اشتراک</h2><div class="usage-layout"><div class="usage-ring" style="--usage:<?=$percent?>%"><div><strong><?=number_format($percent,1)?>٪</strong><small>مصرف‌شده</small></div></div><div class="usage-details"><div><span>مصرف فعلی</span><b><?=nm_h(nm_bytes($used))?></b></div><div><span>حجم کل</span><b><?=nm_h(nm_bytes($limit))?></b></div><div><span>باقی‌مانده</span><b><?=nm_h($limit>0?nm_bytes(max(0,$limit-$used)):'نامحدود')?></b></div><p class="chart-note">این نمودار بر اساس آمار واقعی همین لحظه پنل ساخته شده است. تاریخچه روزانه در API فعلی موجود نیست.</p></div></div></section>
-<section class="card" style="margin-top:15px"><div class="chart-head"><h2>موقعیت سرورها روی کره زمین</h2><span class="metric" id="geoStatus">در حال بررسی موقعیت کانفیگ‌ها…</span></div><div id="globeViz" class="map-wrap"></div><div id="mapLegend" class="map-legend"></div></section>
-<section class="card" style="margin-top:15px"><h2>مدیریت لینک اشتراک</h2><div class="metric">این لینک را در برنامه کلاینت خود به‌عنوان Subscription وارد کنید.</div><div class="actions"><button class="btn primary" id="copy">کپی لینک اشتراک</button><button class="btn secondary" id="refresh">به‌روزرسانی اطلاعات</button></div></section>
-<section class="card" style="margin-top:15px"><h2>کانفیگ‌های اشتراک</h2><p class="metric">برای کپی هر کانفیگ روی آن بزنید.</p><div class="servers"><?php if (!$links): ?><div class="metric">در حال حاضر کانفیگی برای نمایش موجود نیست.</div><?php else: foreach ($links as $i=>$link): $fragment=parse_url($link, PHP_URL_FRAGMENT); $proto=strtoupper((string)strtok($link, ':')); ?><div class="server"><div><strong><?=nm_h(rawurldecode($fragment ?: ('کانفیگ '.($i+1))) )?></strong><code><?=nm_h($link)?></code></div><span><?=nm_h($proto)?></span></div><?php endforeach; endif; ?></div></section>
+<section class="card" style="margin-top:15px"><h2>مصرف فعلی اشتراک</h2><div class="usage-layout"><div class="usage-ring" style="--usage:<?=$percent?>%"><div><strong><?=number_format($percent,1)?>٪</strong><small>مصرف‌شده</small></div></div><div class="usage-details"><div><span>مصرف فعلی</span><b><?=nm_h(nm_bytes($used))?></b></div><div><span>حجم کل</span><b><?=nm_h(nm_bytes($limit))?></b></div><div><span>باقی‌مانده</span><b><?=nm_h($limit>0?nm_bytes(max(0,$limit-$used)):'نامحدود')?></b></div><p class="chart-note">نمایش بر اساس آمار فعلی همین اشتراک از پنل سرور.</p></div></div></section>
+<section class="card" style="margin-top:15px"><div class="chart-head"><h2>موقعیت سرورها روی کره زمین</h2><span class="metric" id="geoStatus">در حال شناسایی موقعیت سرورها…</span></div><div id="globeViz" class="map-wrap"></div><div id="mapLegend" class="map-legend"></div></section>
+<section class="card" style="margin-top:15px"><h2>مدیریت لینک اشتراک</h2><div class="metric">لینک را در برنامه کلاینت خود به‌عنوان Subscription وارد کنید.</div><div class="actions"><button class="btn primary" id="copySub">کپی لینک اشتراک</button><button class="btn secondary" id="refresh">به‌روزرسانی اطلاعات</button></div></section>
+</div>
+<div id="configPanel" class="tab-content">
+<section class="card"><h2>کانفیگ‌های اشتراک</h2><p class="metric">برای کپی، دکمه کنار نام هر کانفیگ را بزنید.</p><div class="servers">
+<?php if (!$links): ?><div class="metric">در حال حاضر کانفیگی برای نمایش موجود نیست.</div><?php else: foreach ($links as $i=>$link): $fragment=parse_url($link, PHP_URL_FRAGMENT); $configName=rawurldecode($fragment ?: ('کانفیگ '.($i+1))); ?>
+<div class="server config-row"><strong><?=nm_h($configName)?></strong><button type="button" class="btn secondary copy-config" data-config="<?=nm_h($link)?>">کپی کانفیگ</button></div>
+<?php endforeach; endif; ?></div></section>
+</div>
 <footer class="footer">NM TUNNEL · OFFICIAL SUBSCRIPTION INTERFACE<br>برای حفظ امنیت، لینک اشتراک خود را در اختیار دیگران قرار ندهید.</footer>
 </main>
 <script src="https://unpkg.com/globe.gl"></script>
 <script>
-const subUrl=<?=json_encode($rawUrl, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE)?>;
-const copyBtn=document.getElementById('copy');
-copyBtn.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(subUrl);copyBtn.textContent='لینک کپی شد ✓';}catch(e){prompt('لینک اشتراک:',subUrl);}});
-document.getElementById('refresh').addEventListener('click',()=>location.reload());
-const cfgRows=[...document.querySelectorAll('.server')];
-cfgRows.forEach((row)=>row.addEventListener('click',async()=>{
- const raw=row.querySelector('code')?.textContent||'';
- try{await navigator.clipboard.writeText(raw);const badge=row.querySelector('span');const old=badge.textContent;badge.textContent='کپی شد ✓';setTimeout(()=>badge.textContent=old,1500);}catch(e){prompt('کپی کانفیگ:',raw);}
+document.querySelectorAll('.tab').forEach(btn=>btn.addEventListener('click',()=>{
+ document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t===btn));
+ document.querySelectorAll('.tab-content').forEach(p=>p.classList.toggle('active',p.id===btn.dataset.panel));
 }));
-function getHost(raw){
+const subUrl=<?=json_encode($rawUrl, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE)?>;
+document.getElementById('copySub').addEventListener('click',async()=>{const b=document.getElementById('copySub');try{await navigator.clipboard.writeText(subUrl);b.textContent='کپی شد ✓';}catch(e){prompt('لینک اشتراک:',subUrl);}});
+document.getElementById('refresh').addEventListener('click',()=>location.reload());
+document.querySelectorAll('.copy-config').forEach(btn=>btn.addEventListener('click',async()=>{
+ const value=btn.dataset.config;try{await navigator.clipboard.writeText(value);btn.textContent='کپی شد ✓';setTimeout(()=>btn.textContent='کپی کانفیگ',1600);}catch(e){prompt('کپی کانفیگ:',value);}
+}));
+function hostFromConfig(raw){
  try{
-  if(raw.startsWith('vmess://')){let b=raw.slice(8).split('#')[0].replace(/-/g,'+').replace(/_/g,'/');while(b.length%4)b+='=';const obj=JSON.parse(atob(b));return obj.add||obj.host||'';}
-  const u=new URL(raw);return u.hostname||'';
- }catch(e){return '';}
+  if(raw.startsWith('vmess://')){let b=raw.slice(8).split('#')[0].replace(/-/g,'+').replace(/_/g,'/');while(b.length%4)b+='=';const o=JSON.parse(atob(b));return o.add||o.server||o.host||'';}
+  if(raw.startsWith('vless://')||raw.startsWith('trojan://')||raw.startsWith('ss://')||raw.startsWith('http://')||raw.startsWith('https://'))return new URL(raw).hostname;
+  if(raw.startsWith('hysteria2://')||raw.startsWith('hy2://'))return new URL(raw).hostname;
+ }catch(e){}
+ return '';
 }
 const geoStatus=document.getElementById('geoStatus'), legend=document.getElementById('mapLegend');
-const points=[];
-async function locateRows(){
- for(let i=0;i<cfgRows.length;i++){
-  const row=cfgRows[i],raw=row.querySelector('code')?.textContent||'',name=row.querySelector('strong')?.textContent||('کانفیگ '+(i+1));
-  const host=getHost(raw);if(!host)continue;
+async function resolveIp(host){
+ if(/^\d{1,3}(\.\d{1,3}){3}$/.test(host))return host;
+ const r=await fetch('https://dns.google/resolve?name='+encodeURIComponent(host)+'&type=A',{headers:{accept:'application/dns-json'}});
+ const d=await r.json();const ans=(d.Answer||[]).find(x=>x.type===1);return ans?.data||'';
+}
+async function buildGlobe(){
+ const rows=[...document.querySelectorAll('.copy-config')],points=[];
+ for(let i=0;i<rows.length;i++){
+  const host=hostFromConfig(rows[i].dataset.config);if(!host)continue;
   try{
-   const res=await fetch('https://ipwho.is/'+encodeURIComponent(host));
-   const data=await res.json();
-   if(data.success&&Number.isFinite(Number(data.latitude))&&Number.isFinite(Number(data.longitude))){
-    points.push({lat:Number(data.latitude),lng:Number(data.longitude),name,country:data.country||'نامشخص',row});
+   const ip=await resolveIp(host);if(!ip)continue;
+   const response=await fetch('https://ipwho.is/'+encodeURIComponent(ip));const data=await response.json();
+   if(data.success&&Number.isFinite(+data.latitude)&&Number.isFinite(+data.longitude)){
+    points.push({lat:+data.latitude,lng:+data.longitude,name:rows[i].closest('.config-row').querySelector('strong').textContent,country:data.country||'نامشخص'});
    }
   }catch(e){}
  }
- geoStatus.textContent=points.length+' موقعیت از '+cfgRows.length+' کانفیگ شناسایی شد';
- points.forEach(p=>{const b=document.createElement('button');b.textContent=p.name+' · '+p.country;b.addEventListener('click',()=>p.row.scrollIntoView({behavior:'smooth',block:'center'}));legend.appendChild(b);});
- if(!points.length) legend.textContent='کره زمین نمایش داده می‌شود؛ موقعیت دقیق این کانفیگ‌ها از دامنه آن‌ها قابل دریافت نبود.';
- if(window.Globe){
-  const el=document.getElementById('globeViz');
-  window.nmGlobe=Globe()(el)
-   .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
-   .bumpImageUrl('https://unpkg.com/three-globe/example/img/earth-topology.png')
-   .backgroundColor('#050805').showAtmosphere(true).atmosphereColor('#83d936').atmosphereAltitude(.18)
-   .pointsData(points).pointLat('lat').pointLng('lng').pointColor(()=> '#b7ff35').pointAltitude(.025).pointRadius(.65)
-   .pointLabel(p=>p.name+' · '+p.country)
-   .onPointClick(p=>p.row.scrollIntoView({behavior:'smooth',block:'center'}));
-  window.nmGlobe.controls().autoRotate=true;window.nmGlobe.controls().autoRotateSpeed=.4;
- }else{geoStatus.textContent='کتابخانه نقشه بارگذاری نشد؛ اتصال اینترنت را بررسی کنید.';}
+ geoStatus.textContent=points.length+' موقعیت از '+rows.length+' کانفیگ شناسایی شد';
+ if(points.length){points.forEach(p=>{const b=document.createElement('button');b.textContent=p.name+' · '+p.country;legend.appendChild(b);});}
+ else legend.textContent='دامنه‌ها قابل تبدیل به موقعیت جغرافیایی نبودند؛ کره زمین همچنان نمایش داده می‌شود.';
+ const el=document.getElementById('globeViz');
+ if(!window.Globe){geoStatus.textContent='کتابخانه کره زمین بارگذاری نشد؛ اتصال اینترنت را بررسی کنید.';return;}
+ const width=Math.max(320,el.clientWidth),height=el.clientHeight||390;
+ window.nmGlobe=Globe()(el).width(width).height(height)
+  .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
+  .bumpImageUrl('https://unpkg.com/three-globe/example/img/earth-topology.png')
+  .backgroundColor('#050805').showAtmosphere(true).atmosphereColor('#83d936').atmosphereAltitude(.18)
+  .pointsData(points).pointLat('lat').pointLng('lng').pointColor(()=> '#b7ff35').pointAltitude(.025).pointRadius(.65)
+  .pointLabel(p=>p.name+' · '+p.country);
+ window.nmGlobe.pointOfView({lat:25,lng:20,altitude:2.2},0);
+ window.nmGlobe.controls().autoRotate=true;window.nmGlobe.controls().autoRotateSpeed=.35;
+ window.addEventListener('resize',()=>window.nmGlobe&&window.nmGlobe.width(Math.max(320,el.clientWidth)).height(el.clientHeight||390));
 }
-locateRows();
+buildGlobe();
 </script></body></html>
