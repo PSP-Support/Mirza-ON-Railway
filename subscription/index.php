@@ -143,8 +143,8 @@ async function locateRows(){
   }catch(e){}
  }
  geoStatus.textContent=points.length+' موقعیت از '+cfgRows.length+' کانفیگ شناسایی شد';
- if(!points.length){legend.textContent='موقعیت جغرافیایی این سرورها از آدرس فعلی قابل دریافت نیست.';return;}
  points.forEach(p=>{const b=document.createElement('button');b.textContent=p.name+' · '+p.country;b.addEventListener('click',()=>p.row.scrollIntoView({behavior:'smooth',block:'center'}));legend.appendChild(b);});
+ if(!points.length) legend.textContent='کره زمین نمایش داده می‌شود؛ موقعیت دقیق این کانفیگ‌ها از دامنه آن‌ها قابل دریافت نبود.';
  if(window.Globe){
   const el=document.getElementById('globeViz');
   window.nmGlobe=Globe()(el)
