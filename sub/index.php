@@ -90,6 +90,14 @@ try {
         nm_sub_response(502, "هیچ کانفیگ قابل پشتیبانی برای این اشتراک دریافت نشد.\n");
     }
 
+    // v2rayNG also reads these standard subscription metadata headers.
+    $siteBase = 'https://' . $domainhosts;
+    if ($domainhosts !== '') {
+        header('Profile-Title: NM TUNNEL');
+        header('Support-Url: https://t.me/NM_Tunnel');
+        header('Profile-Web-Page-Url: ' . $siteBase . '/s/' . rawurlencode($token));
+    }
+
     // Standard newline-separated URI list. v2rayNG parses both raw URI lists and Base64 lists.
     $body = implode("\n", array_values($configs)) . "\n";
     nm_sub_response(200, $body);
