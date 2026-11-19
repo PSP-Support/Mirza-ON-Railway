@@ -108,7 +108,9 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background:lin
 <section class="card"><h2>مدیریت لینک اشتراک</h2><div class="metric">این لینک را در برنامه کلاینت خود به‌عنوان Subscription وارد کنید.</div><div class="actions"><button class="btn primary" id="copy">کپی لینک اشتراک</button><button class="btn secondary" id="refresh">به‌روزرسانی اطلاعات</button></div></section>
 </section>
 <section id="configs" class="tab-panel"><section class="card"><h2>کانفیگ‌های اشتراک</h2><p class="metric">برای کپی هر کانفیگ روی آن بزنید.</p><div class="servers"><?php if (!$links): ?><div class="metric">در حال حاضر کانفیگی برای نمایش موجود نیست.</div><?php else: foreach ($links as $i=>$link): $fragment=parse_url($link, PHP_URL_FRAGMENT); $proto=strtoupper((string)strtok($link, ':')); ?><div class="server"><div><strong><?=nm_h(rawurldecode($fragment ?: ('کانفیگ '.($i+1))) )?></strong><code><?=nm_h($link)?></code></div><span><?=nm_h($proto)?></span></div><?php endforeach; endif; ?></div></section>
+</section>
 <section id="map" class="tab-panel"><section class="card"><h2>موقعیت سرورها روی کره زمین</h2><p class="metric">برای مشاهده محل هر سرور، نشانگر یا نام آن را انتخاب کنید. مکان‌یابی بر اساس نام/دامنه کانفیگ انجام می‌شود.</p><div id="globeViz" class="map-wrap"></div><div id="mapLegend" class="map-legend"></div></section>
+</section>
 <section id="usage" class="tab-panel"><section class="card"><div class="chart-head"><h2>نمودار مصرف</h2><select id="chartRange"><option value="7">۷ روز اخیر</option><option value="30" selected>۳۰ روز اخیر</option><option value="all">کل دوره اشتراک</option></select></div><div class="chart"><svg viewBox="0 0 700 190" preserveAspectRatio="none"><defs><linearGradient id="chartFill" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#b7ff35" stop-opacity=".25"/><stop offset="1" stop-color="#b7ff35" stop-opacity="0"/></linearGradient></defs><path id="chartArea" class="chart-area"/><path id="chartLine" class="chart-line"/></svg></div><p class="chart-note">نمودار نمایشی روند مصرف است؛ API فعلی پنل تاریخچه روزانه مصرف را برنمی‌گرداند. برای همین این نمودار تاریخچه واقعی نیست و مقدار دقیق مصرف در کارت بالا نمایش داده شده است.</p></section>
 </section>
 <footer class="footer">NM TUNNEL · OFFICIAL SUBSCRIPTION INTERFACE<br>برای حفظ امنیت، لینک اشتراک خود را در اختیار دیگران قرار ندهید.</footer>
@@ -152,8 +154,8 @@ cfgRows.forEach((row,i)=>{
 const legend=document.getElementById('mapLegend');
 markers.forEach(m=>{const b=document.createElement('button');b.textContent=m.name+' · '+m.country;b.addEventListener('click',()=>{document.querySelector('[data-tab="configs"]').click();m.row.scrollIntoView({behavior:'smooth',block:'center'});});legend.appendChild(b);});
 if(!markers.length) legend.textContent='از نام یا دامنه کانفیگ‌ها کشور قابل تشخیص نیست. نام سرورها باید شامل کشور یا کد کشور باشد.';
+const el=document.getElementById('globeViz');
 if(window.Globe){
- const el=document.getElementById('globeViz');
  window.nmGlobe=Globe()(el)
   .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
   .bumpImageUrl('https://unpkg.com/three-globe/example/img/earth-topology.png')
