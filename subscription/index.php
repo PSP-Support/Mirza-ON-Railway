@@ -84,7 +84,7 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background:lin
 .primary:hover{background:#d0ff83;box-shadow:0 0 22px #a7ff3245}
 .secondary{background:#101810;color:var(--white)}
 .secondary:hover{border-color:var(--green);color:var(--green)}
-.servers{display:grid;gap:9px}
+.servers{display:grid;gap:9px}.server{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;padding:14px;border:1px solid #263b25;background:#080e08}.server strong{display:block;color:var(--green);font-size:14px}.server code{display:block;margin-top:6px;color:#71816b;font:10px 'Share Tech Mono',monospace;direction:ltr;text-align:left;overflow-wrap:anywhere;white-space:normal}.social{display:flex;gap:10px;margin:-10px 0 18px;flex-wrap:wrap}.social a{color:var(--green);font:12px 'Share Tech Mono','Vazirmatn',sans-serif;text-decoration:none;border:1px solid #36502b;padding:9px 12px;background:#a7ff3208}.square-metric{min-height:135px;display:flex;flex-direction:column;justify-content:space-between}.square-metric .value{color:var(--green);font-size:19px}
 .server{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:13px 14px;border:1px solid #263b25;background:#080e08}
 .server strong{font-size:12px;direction:ltr;overflow-wrap:anywhere;font-family:'Share Tech Mono','Vazirmatn',sans-serif}
 .server span{font-size:10px;color:var(--green);white-space:nowrap;font-family:'Share Tech Mono',sans-serif;border:1px solid #38542c;padding:4px 7px}
@@ -94,18 +94,18 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background:lin
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
 </style></head>
 <body><main class="wrap">
-<header class="top"><div class="brand"><div class="logo">NM</div><div><b>NM TUNNEL</b><small>SECURE CONNECTION SERVICES</small></div></div><div class="secure">■ SYSTEM ONLINE</div></header>
+<header class="top"><div class="brand"><div class="logo">NM</div><div><b>NM TUNNEL</b><small>SECURE CONNECTION SERVICES</small></div></div><div class="secure">■ SYSTEM ONLINE</div></header><div class="social"><a href="https://t.me/NmTunnel_bot" target="_blank">@NmTunnel_bot</a><a href="https://t.me/NM_Tunnel" target="_blank">@NM_Tunnel</a></div>
 <section class="hero"><div class="eyebrow">[ NM SYSTEM // SUBSCRIPTION ]</div><h1>مدیریت اشتراک شما</h1><p>وضعیت سرویس و اطلاعات اتصال خود را در این صفحه مشاهده و مدیریت کنید.</p><div class="status <?=nm_h($statusClass)?>"><i class="dot"></i><?=nm_h($statusLabel)?></div></section>
 <section class="grid">
 <div class="card"><div class="metric">نام کاربری سرویس</div><div class="value"><?=nm_h($invoice['username'] ?? '—')?></div></div>
 <div class="card"><div class="metric">موقعیت سرویس</div><div class="value"><?=nm_h($invoice['Service_location'] ?? '—')?></div></div>
-<div class="card"><div class="metric">ترافیک مصرف‌شده</div><div class="value"><?=nm_h(nm_bytes($used))?></div><div class="bar"><i style="width:<?=$percent?>%"></i></div></div>
-<div class="card"><div class="metric">حجم کل سرویس</div><div class="value"><?=nm_h(nm_bytes($limit))?></div></div>
-<div class="card"><div class="metric">تعداد کانفیگ‌ها</div><div class="value"><?=count($links)?></div></div>
-<div class="card"><div class="metric">تاریخ انقضا</div><div class="value"><?=nm_h(nm_date($info['expire'] ?? null))?></div></div>
+<div class="card square-metric"><div class="metric">حجم مصرف‌شده</div><div class="value"><?=nm_h(nm_bytes($used))?></div><div class="bar"><i style="width:<?=$percent?>%"></i></div></div>
+<div class="card square-metric"><div class="metric">حجم کل اشتراک</div><div class="value"><?=nm_h(nm_bytes($limit))?></div></div>
+<div class="card square-metric"><div class="metric">تعداد کانفیگ‌ها</div><div class="value"><?=count($links)?></div></div>
+<div class="card square-metric"><div class="metric">تاریخ انقضا</div><div class="value"><?=nm_h(nm_date($info['expire'] ?? null))?></div></div>
 </section>
-<section class="card"><h2>مدیریت لینک اشتراک</h2><div class="metric">این لینک را در برنامه کلاینت خود به‌عنوان Subscription وارد کنید.</div><div class="actions"><button class="btn primary" id="copy">کپی لینک اشتراک</button><a class="btn secondary" href="<?=nm_h($rawUrl)?>" target="_blank" rel="noopener">مشاهده خروجی خام</a><button class="btn secondary" id="refresh">به‌روزرسانی اطلاعات</button></div></section>
-<section class="card" style="margin-top:17px"><h2>سرورهای موجود در اشتراک</h2><div class="servers"><?php if (!$links): ?><div class="metric">در حال حاضر کانفیگی برای نمایش موجود نیست.</div><?php else: foreach ($links as $i=>$link): $fragment=parse_url($link, PHP_URL_FRAGMENT); $proto=strtoupper((string)strtok($link, ':')); ?><div class="server"><strong><?=nm_h($fragment ?: ('سرور '.($i+1)))?></strong><span><?=nm_h($proto)?></span></div><?php endforeach; endif; ?></div></section>
+<section class="card"><h2>مدیریت لینک اشتراک</h2><div class="metric">این لینک را در برنامه کلاینت خود به‌عنوان Subscription وارد کنید.</div><div class="actions"><button class="btn primary" id="copy">کپی لینک اشتراک</button><button class="btn secondary" id="refresh">به‌روزرسانی اطلاعات</button></div></section>
+<section class="card" style="margin-top:17px"><h2>سرورهای موجود در اشتراک</h2><div class="servers"><?php if (!$links): ?><div class="metric">در حال حاضر کانفیگی برای نمایش موجود نیست.</div><?php else: foreach ($links as $i=>$link): $fragment=parse_url($link, PHP_URL_FRAGMENT); $proto=strtoupper((string)strtok($link, ':')); ?><div class="server"><div><strong><?=nm_h(rawurldecode($fragment ?: ('کانفیگ '.($i+1))) )?></strong><code><?=nm_h($link)?></code></div><span><?=nm_h($proto)?></span></div><?php endforeach; endif; ?></div></section>
 <footer class="footer">NM TUNNEL · OFFICIAL SUBSCRIPTION INTERFACE<br>برای حفظ امنیت، لینک اشتراک خود را در اختیار دیگران قرار ندهید.</footer>
 </main>
 <script>
