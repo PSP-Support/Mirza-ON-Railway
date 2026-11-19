@@ -44,6 +44,8 @@ $isBrowser = !$isV2rayNg && (
 );
 
 header('Vary: User-Agent, Accept, Sec-Fetch-Dest');
+header('Cache-Control: private, no-store, no-cache, must-revalidate, max-age=0');
+header('Pragma: no-cache');
 header('X-Robots-Tag: noindex, nofollow');
 
 if ($isBrowser) {
