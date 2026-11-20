@@ -125,6 +125,9 @@ if (session_status() === PHP_SESSION_NONE && isset($pdo) && $pdo instanceof PDO)
     }
 }
 
+// Keep panel sessions alive for up to eight hours of inactivity.
+ini_set('session.gc_maxlifetime', '28800');
+
 date_default_timezone_set('Asia/Tehran');
 
 // Panel UI language strings (loaded from lang/fa.php via languagechange())
