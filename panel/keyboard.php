@@ -2,9 +2,15 @@
 require_once __DIR__ . '/inc/config.php';
 require_once __DIR__ . '/inc/icons.php';
 require_auth();
+$forwardedProto = strtolower(trim(explode(',', (string)($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? ''))[0]));
+$isHttpsRequest = (
+    (!empty($_SERVER['HTTPS']) && strtolower((string)$_SERVER['HTTPS']) !== 'off') ||
+    $forwardedProto === 'https'
+);
 setcookie('XSRF-TOKEN', csrf_token(), [
     'path' => '/',
-    'secure' => !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off',
+    'secure' => $isHttpsRequest,
+    'httponly' => false,
     'samesite' => 'Strict',
 ]);
 
