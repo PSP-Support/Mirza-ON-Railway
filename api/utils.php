@@ -7,7 +7,6 @@ if (isset($_SERVER['SCRIPT_FILENAME']) && realpath($_SERVER['SCRIPT_FILENAME']) 
 
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../function.php';
-require_once __DIR__ . '/../session_store.php';
 
 if (!function_exists('getallheaders')) {
     function getallheaders(): array
