@@ -2,6 +2,7 @@
 
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../function.php';
+require_once __DIR__ . '/../session_store.php';
 require_once __DIR__ . '/utils.php';
 require_once __DIR__ . '/../botapi.php';
 header('Content-Type: application/json; charset=UTF-8');
