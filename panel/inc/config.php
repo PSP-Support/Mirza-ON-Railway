@@ -1,10 +1,18 @@
 <?php
 
+// Railway terminates HTTPS at its proxy. Respect the forwarded scheme when
+// deciding whether the browser session cookie must carry the Secure flag.
 if (session_status() === PHP_SESSION_NONE) {
+    $forwardedProto = strtolower(trim(explode(',', (string)($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? ''))[0]));
+    $isHttpsRequest = (
+        (!empty($_SERVER['HTTPS']) && strtolower((string)$_SERVER['HTTPS']) !== 'off') ||
+        $forwardedProto === 'https'
+    );
+
     session_set_cookie_params([
         'lifetime' => 0,
         'path' => '/',
-        'secure' => !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off',
+        'secure' => $isHttpsRequest,
         'httponly' => true,
         'samesite' => 'Lax',
     ]);
@@ -12,6 +20,110 @@ if (session_status() === PHP_SESSION_NONE) {
 
 require __DIR__ . '/../../config.php';
 require __DIR__ . '/../../function.php';
+
+/**
+ * Store admin-panel sessions in MySQL so a request routed to another Railway
+ * replica, or a container restart, does not silently lose the login session.
+ */
+if (!class_exists('MirzaPanelPdoSessionHandler', false)) {
+    final class MirzaPanelPdoSessionHandler implements SessionHandlerInterface
+    {
+        private PDO $pdo;
+        private ?string $lockName = null;
+
+        public function __construct(PDO $pdo)
+        {
+            $this->pdo = $pdo;
+        }
+
+        public function open(string $path, string $name): bool
+        {
+            return true;
+        }
+
+        public function close(): bool
+        {
+            if ($this->lockName !== null) {
+                try {
+                    $stmt = $this->pdo->prepare('SELECT RELEASE_LOCK(?)');
+                    $stmt->execute([$this->lockName]);
+                } catch (Throwable $e) {
+                    error_log('Panel session lock release failed: ' . $e->getMessage());
+                }
+                $this->lockName = null;
+            }
+            return true;
+        }
+
+        public function read(string $id): string|false
+        {
+            $lockName = 'nm_panel_' . substr(hash('sha256', $id), 0, 48);
+            $lock = $this->pdo->prepare('SELECT GET_LOCK(?, 5)');
+            $lock->execute([$lockName]);
+            if ((int)$lock->fetchColumn() !== 1) {
+                error_log('Panel session lock could not be acquired.');
+                return false;
+            }
+            $this->lockName = $lockName;
+
+            $stmt = $this->pdo->prepare('SELECT session_data, last_activity FROM panel_sessions WHERE session_id = ? LIMIT 1');
+            $stmt->execute([$id]);
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            if (!$row) {
+                return '';
+            }
+
+            if ((int)$row['last_activity'] < time() - 28800) {
+                $delete = $this->pdo->prepare('DELETE FROM panel_sessions WHERE session_id = ?');
+                $delete->execute([$id]);
+                return '';
+            }
+
+            return (string)$row['session_data'];
+        }
+
+        public function write(string $id, string $data): bool
+        {
+            $stmt = $this->pdo->prepare(
+                'INSERT INTO panel_sessions (session_id, session_data, last_activity) VALUES (?, ?, ?) ' .
+                'ON DUPLICATE KEY UPDATE session_data = VALUES(session_data), last_activity = VALUES(last_activity)'
+            );
+            return $stmt->execute([$id, $data, time()]);
+        }
+
+        public function destroy(string $id): bool
+        {
+            $stmt = $this->pdo->prepare('DELETE FROM panel_sessions WHERE session_id = ?');
+            return $stmt->execute([$id]);
+        }
+
+        public function gc(int $max_lifetime): int|false
+        {
+            $stmt = $this->pdo->prepare('DELETE FROM panel_sessions WHERE last_activity < ?');
+            $stmt->execute([time() - max(60, $max_lifetime)]);
+            return $stmt->rowCount();
+        }
+    }
+}
+
+// Register the shared handler before any panel page calls session_start().
+if (session_status() === PHP_SESSION_NONE && isset($pdo) && $pdo instanceof PDO) {
+    try {
+        $pdo->exec(
+            'CREATE TABLE IF NOT EXISTS panel_sessions (' .
+            'session_id VARCHAR(128) CHARACTER SET ascii COLLATE ascii_bin NOT NULL PRIMARY KEY,' .
+            'session_data MEDIUMBLOB NOT NULL,' .
+            'last_activity INT UNSIGNED NOT NULL,' .
+            'INDEX idx_panel_sessions_activity (last_activity)' .
+            ') ENGINE=InnoDB DEFAULT CHARSET=utf8mb4'
+        );
+        session_set_save_handler(new MirzaPanelPdoSessionHandler($pdo), true);
+    } catch (Throwable $e) {
+        // Keep the native PHP handler as a fallback if the database user cannot
+        // create/use the session table; the reason will be visible in Railway logs.
+        error_log('Panel shared-session handler unavailable; using PHP file sessions: ' . $e->getMessage());
+    }
+}
 
 date_default_timezone_set('Asia/Tehran');
 
@@ -82,10 +194,12 @@ function require_auth(): void
             header('Location: login.php');
             exit;
         }
-    } catch (Exception $e) {
-        session_destroy();
-        header('Location: login.php');
-        exit;
+    } catch (Throwable $e) {
+        // A transient database error must not erase a valid admin session and
+        // create a redirect loop back to the login page.
+        error_log('Panel auth database check failed: ' . $e->getMessage());
+        http_response_code(503);
+        exit('ارتباط با پایگاه داده موقتاً برقرار نشد. صفحه را دوباره بارگذاری کنید.');
     }
 }
 
