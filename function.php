@@ -808,53 +808,35 @@ function cubepayPayableAmount($price)
 }
 function abangatewayEndpoint(): ?string
 {
-    // The current AbanGateway API is hosted on api.abangateway.ir.
-    // Accept the old root-domain value and the documented API paths, then
-    // normalize everything to the v1 API base.
-    $endpoint = trim((string) getPaySettingValue('endpointiranpay4', ''));
+    // AbanGateway's dedicated Mirza connection returns a per-bot HTTPS URL.
+    // It is not the public /api/v1 base URL.
+    $endpoint = trim((string)getPaySettingValue('endpointiranpay4', ''));
     if ($endpoint === '' || $endpoint === '0') {
-        $endpoint = 'https://api.abangateway.ir';
+        return null;
     }
 
     $parts = parse_url($endpoint);
-    if (!is_array($parts) || strtolower((string)($parts['scheme'] ?? '')) !== 'https') {
+    if (!is_array($parts) || strtolower((string)($parts['scheme'] ?? '')) !== 'https' || empty($parts['host'])) {
         return null;
     }
 
-    $host = strtolower((string)($parts['host'] ?? ''));
-    if ($host === 'abangateway.ir') {
-        $host = 'api.abangateway.ir';
-    }
-    // Do not send a merchant bearer token to an arbitrary host.
-    if ($host !== 'api.abangateway.ir') {
-        return null;
-    }
-
-    $path = rtrim((string)($parts['path'] ?? ''), '/');
-    foreach (['/api/v1/invoices', '/api/v1', '/create'] as $suffix) {
-        if (str_ends_with($path, $suffix)) {
-            $path = substr($path, 0, -strlen($suffix));
-            break;
-        }
-    }
-
-    return 'https://api.abangateway.ir' . rtrim($path, '/') . '/api/v1';
+    return rtrim($endpoint, '/');
 }
 
 function abangatewayCardInvoice($pay, $order_id)
 {
     global $textbotlang;
 
-    $number = preg_replace('/\\D/', '', (string) ($pay['card']['number'] ?? ''));
-    $rial = intval($pay['payable_rial'] ?? 0);
-    $toman = intval($pay['payable_toman'] ?? 0);
-    $minutes = intval($pay['minutes_left'] ?? 0);
+    $number = preg_replace('/\\D/', '', (string)($pay['card']['number'] ?? ''));
+    $rial = (int)($pay['payable_rial'] ?? 0);
+    $toman = (int)($pay['payable_toman'] ?? 0);
+    $minutes = (int)($pay['minutes_left'] ?? 0);
     if (empty($pay['card_in_bot']) || $number === '' || $rial < 1 || $toman < 1 || $minutes < 1) {
         return null;
     }
 
-    $holder = htmlspecialchars(trim((string) ($pay['card']['holder'] ?? '')), ENT_QUOTES, 'UTF-8');
-    $bank = trim((string) ($pay['card']['bank'] ?? ''));
+    $holder = htmlspecialchars(trim((string)($pay['card']['holder'] ?? '')), ENT_QUOTES, 'UTF-8');
+    $bank = trim((string)($pay['card']['bank'] ?? ''));
     if ($bank !== '') {
         $holder .= ' (' . htmlspecialchars($bank, ENT_QUOTES, 'UTF-8') . ')';
     }
@@ -866,8 +848,8 @@ function abangatewayCardInvoice($pay, $order_id)
             'inline_keyboard' => [
                 [['text' => $textbotlang['keyboard']['copyCardNumber'], 'copy_text' => ['text' => $number]]],
                 [
-                    ['text' => $textbotlang['keyboard']['abangatewayCopyRial'], 'copy_text' => ['text' => (string) $rial]],
-                    ['text' => $textbotlang['keyboard']['abangatewayCopyToman'], 'copy_text' => ['text' => (string) $toman]],
+                    ['text' => $textbotlang['keyboard']['abangatewayCopyRial'], 'copy_text' => ['text' => (string)$rial]],
+                    ['text' => $textbotlang['keyboard']['abangatewayCopyToman'], 'copy_text' => ['text' => (string)$toman]],
                 ],
                 [['text' => $lang['payments'], 'url' => $pay['payment_link']]],
             ],
@@ -875,50 +857,53 @@ function abangatewayCardInvoice($pay, $order_id)
     ];
 }
 
+/**
+ * Dedicated Mirza integration endpoint issued by AbanGateway.
+ * This is intentionally /create with amount in TOMAN. Do not replace it with
+ * the public Aban REST API (/api/v1/invoices), which uses a different token and
+ * payload contract.
+ */
 function createPayiranpay4($price, $order_id, $user_id)
 {
     global $domainhosts;
 
-    $api_key = trim((string) getPaySettingValue('apiiranpay4', ''));
-    $apiBase = abangatewayEndpoint();
-    if ($api_key === '' || $api_key === '0' || $apiBase === null) {
-        return ['success' => false, 'message' => 'AbanGateway: API key or API endpoint is not configured'];
+    $apiKey = trim((string)getPaySettingValue('apiiranpay4', ''));
+    $endpoint = abangatewayEndpoint();
+    if ($apiKey === '' || $apiKey === '0' || $endpoint === null) {
+        error_log('AbanGateway Mirza create: connection key or dedicated HTTPS endpoint is missing');
+        return ['success' => false, 'message' => 'AbanGateway: connection key or dedicated endpoint is missing'];
     }
 
-    $amountToman = (int) round((float)$price);
-    if ($amountToman < 1 || $amountToman > intdiv(PHP_INT_MAX, 10)) {
-        return ['success' => false, 'message' => 'AbanGateway: invalid payment amount'];
+    $amountToman = (int)round((float)$price);
+    if ($amountToman < 1) {
+        error_log('AbanGateway Mirza create: invalid Toman amount');
+        return ['success' => false, 'message' => 'AbanGateway: invalid amount'];
     }
 
-    $siteHost = trim((string)$domainhosts);
-    if ($siteHost === '') {
-        return ['success' => false, 'message' => 'AbanGateway: APP_URL or Railway public domain is not configured'];
+    $host = trim((string)$domainhosts);
+    if ($host === '') {
+        error_log('AbanGateway Mirza create: APP_URL / Railway public domain is missing');
+        return ['success' => false, 'message' => 'AbanGateway: public callback domain is missing'];
     }
 
-    $callbackUrl = 'https://' . $siteHost . '/payment/iranpay4.php';
-    $returnUrl = $callbackUrl . '?order_id=' . rawurlencode((string)$order_id);
     $payload = [
-        'amount_rial' => $amountToman * 10,
+        'amount' => $amountToman,
         'order_id' => (string)$order_id,
-        'callback_url' => $callbackUrl,
-        'return_url' => $returnUrl,
-        'description' => 'NM Tunnel order ' . (string)$order_id,
-        'metadata' => [
-            'user_id' => (string)$user_id,
-        ],
+        'user_id' => (string)$user_id,
+        'callback_url' => 'https://' . $host . '/payment/iranpay4.php',
     ];
 
     $curl = curl_init();
     curl_setopt_array($curl, [
-        CURLOPT_URL => $apiBase . '/invoices',
+        CURLOPT_URL => $endpoint . '/create',
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_CONNECTTIMEOUT => 10,
         CURLOPT_TIMEOUT => 25,
         CURLOPT_POST => true,
         CURLOPT_HTTPHEADER => [
-            'Authorization: Bearer ' . $api_key,
             'Content-Type: application/json',
             'Accept: application/json',
+            'Authorization: Bearer ' . $apiKey,
         ],
         CURLOPT_POSTFIELDS => json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
     ]);
@@ -929,59 +914,37 @@ function createPayiranpay4($price, $order_id, $user_id)
     curl_close($curl);
 
     if ($response === false) {
-        error_log('AbanGateway create invoice transport error: ' . $curlError);
-        return ['success' => false, 'message' => 'AbanGateway: gateway connection failed'];
+        error_log('AbanGateway Mirza create transport failure; HTTP ' . $httpCode . '; cURL: ' . $curlError);
+        return ['success' => false, 'http_code' => $httpCode, 'message' => 'AbanGateway: connection to dedicated endpoint failed'];
     }
 
     $decoded = json_decode((string)$response, true);
     if (!is_array($decoded)) {
-        error_log('AbanGateway create invoice returned non-JSON response; HTTP ' . $httpCode);
-        return ['success' => false, 'http_code' => $httpCode, 'message' => 'AbanGateway: invalid gateway response'];
+        error_log('AbanGateway Mirza create returned invalid JSON; HTTP ' . $httpCode);
+        return ['success' => false, 'http_code' => $httpCode, 'message' => 'AbanGateway: invalid response'];
     }
 
-    if ($httpCode < 200 || $httpCode >= 300) {
-        $errorCode = (string)($decoded['error']['code'] ?? $decoded['code'] ?? 'request_failed');
-        $errorMessage = trim((string)($decoded['error']['message'] ?? $decoded['message'] ?? ''));
-        error_log('AbanGateway create invoice rejected; HTTP ' . $httpCode . ', code ' . $errorCode);
-        return [
-            'success' => false,
-            'http_code' => $httpCode,
-            'error_code' => $errorCode,
-            'message' => 'AbanGateway ' . $httpCode . ': ' . $errorCode . ($errorMessage !== '' ? ' - ' . $errorMessage : ''),
-        ];
+    $paymentLink = trim((string)($decoded['payment_link'] ?? $decoded['payment_url'] ?? $decoded['pay_page_url'] ?? ''));
+    if (($httpCode < 200 || $httpCode >= 300) || empty($decoded['success']) || $paymentLink === '') {
+        $errorCode = (string)($decoded['error']['code'] ?? $decoded['code'] ?? $decoded['error_code'] ?? 'create_rejected');
+        $errorMessage = trim((string)($decoded['error']['message'] ?? $decoded['message'] ?? $decoded['error'] ?? ''));
+        // Never log response bodies or credentials: only HTTP status and provider error identifiers.
+        error_log('AbanGateway Mirza create rejected; HTTP ' . $httpCode . '; code ' . $errorCode . ($errorMessage !== '' ? '; message ' . substr(strip_tags($errorMessage), 0, 240) : ''));
+        $decoded['success'] = false;
+        $decoded['message'] = 'AbanGateway ' . $httpCode . ': ' . $errorCode . ($errorMessage !== '' ? ' - ' . substr(strip_tags($errorMessage), 0, 240) : '');
+        return $decoded;
     }
 
-    $paymentUrl = trim((string)($decoded['payment_url'] ?? $decoded['payment_link'] ?? ''));
-    $invoiceId = trim((string)($decoded['invoice_id'] ?? ''));
-    $urlParts = $paymentUrl !== '' ? parse_url($paymentUrl) : false;
-    if ($invoiceId === '' || !$urlParts || strtolower((string)($urlParts['scheme'] ?? '')) !== 'https' || empty($urlParts['host'])) {
-        error_log('AbanGateway create invoice response missing invoice_id or valid payment_url; HTTP ' . $httpCode);
-        return ['success' => false, 'http_code' => $httpCode, 'message' => 'AbanGateway: invoice response is missing a valid payment link'];
+    // Normalize response aliases for the existing Mirza bot UI.
+    $decoded['payment_link'] = $paymentLink;
+    if (!isset($decoded['payable_rial']) && isset($decoded['amount_rial'])) {
+        $decoded['payable_rial'] = (int)$decoded['amount_rial'];
+    }
+    if (!isset($decoded['payable_toman']) && isset($decoded['amount_toman'])) {
+        $decoded['payable_toman'] = (int)$decoded['amount_toman'];
     }
 
-    $payableRial = (int)($decoded['payable_rial'] ?? 0);
-    $payableToman = (int)($decoded['payable_toman'] ?? ($payableRial > 0 ? round($payableRial / 10) : 0));
-    $expiresAt = strtotime((string)($decoded['expires_at'] ?? ''));
-    $minutesLeft = $expiresAt ? max(1, (int)ceil(($expiresAt - time()) / 60)) : 15;
-    $cardNumber = (string)($decoded['card_number'] ?? '');
-
-    return [
-        'success' => true,
-        'invoice_id' => $invoiceId,
-        'payment_link' => $paymentUrl,
-        'amount_rial' => (int)($decoded['amount_rial'] ?? ($amountToman * 10)),
-        'payable_rial' => $payableRial,
-        'payable_toman' => $payableToman,
-        'card_in_bot' => $cardNumber !== '',
-        'card' => [
-            'number' => $cardNumber,
-            'holder' => (string)($decoded['card_holder'] ?? ''),
-            'bank' => (string)($decoded['bank'] ?? ''),
-        ],
-        'minutes_left' => $minutesLeft,
-        'expires_at' => (string)($decoded['expires_at'] ?? ''),
-        'raw_status' => (string)($decoded['status'] ?? 'pending'),
-    ];
+    return $decoded;
 }
 
 function cubepay($order_id, $price, $customer_user_id)
