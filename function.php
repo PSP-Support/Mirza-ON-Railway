@@ -892,6 +892,7 @@ function createPayiranpay4($price, $order_id, $user_id)
         'callback_url' => 'https://' . $host . '/payment/iranpay4.php',
     ];
 
+    $responseHeaders = ['allow' => '', 'content_type' => '', 'server' => ''];
     $curl = curl_init();
     curl_setopt_array($curl, [
         CURLOPT_URL => $endpoint,
@@ -905,6 +906,19 @@ function createPayiranpay4($price, $order_id, $user_id)
             'Authorization: Bearer ' . $apiKey,
         ],
         CURLOPT_POSTFIELDS => json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+        CURLOPT_HEADERFUNCTION => static function ($curlHandle, string $headerLine) use (&$responseHeaders): int {
+            $length = strlen($headerLine);
+            $parts = explode(':', $headerLine, 2);
+            if (count($parts) === 2) {
+                $name = strtolower(trim($parts[0]));
+                $value = trim($parts[1]);
+                if (in_array($name, ['allow', 'content-type', 'server'], true)) {
+                    $key = $name === 'content-type' ? 'content_type' : $name;
+                    $responseHeaders[$key] = substr($value, 0, 160);
+                }
+            }
+            return $length;
+        },
     ]);
 
     $response = curl_exec($curl);
@@ -917,14 +931,36 @@ function createPayiranpay4($price, $order_id, $user_id)
         return ['success' => false, 'http_code' => $httpCode, 'message' => 'AbanGateway: connection to dedicated endpoint failed'];
     }
 
+    // Diagnose HTTP errors before trying to decode the body. Some endpoint
+    // routers return an HTML 405 page rather than the JSON used by the API.
+    if ($httpCode < 200 || $httpCode >= 300) {
+        $allow = $responseHeaders['allow'];
+        $contentType = $responseHeaders['content_type'];
+        error_log(
+            'AbanGateway Mirza create HTTP failure; code ' . $httpCode .
+            '; content-type ' . ($contentType !== '' ? $contentType : 'unknown') .
+            '; allow ' . ($allow !== '' ? $allow : 'not provided') .
+            '; server ' . ($responseHeaders['server'] !== '' ? $responseHeaders['server'] : 'unknown')
+        );
+        return [
+            'success' => false,
+            'http_code' => $httpCode,
+            'allowed_methods' => $allow,
+            'content_type' => $contentType,
+            'message' => 'AbanGateway endpoint returned HTTP ' . $httpCode .
+                ($allow !== '' ? '; allowed methods: ' . $allow : '') .
+                ($contentType !== '' ? '; response: ' . $contentType : ''),
+        ];
+    }
+
     $decoded = json_decode((string)$response, true);
     if (!is_array($decoded)) {
-        error_log('AbanGateway Mirza create returned invalid JSON; HTTP ' . $httpCode);
-        return ['success' => false, 'http_code' => $httpCode, 'message' => 'AbanGateway: invalid response'];
+        error_log('AbanGateway Mirza create returned invalid JSON; HTTP ' . $httpCode . '; content-type ' . ($responseHeaders['content_type'] ?: 'unknown'));
+        return ['success' => false, 'http_code' => $httpCode, 'content_type' => $responseHeaders['content_type'], 'message' => 'AbanGateway: invalid JSON response'];
     }
 
     $paymentLink = trim((string)($decoded['payment_link'] ?? $decoded['payment_url'] ?? $decoded['pay_page_url'] ?? ''));
-    if (($httpCode < 200 || $httpCode >= 300) || empty($decoded['success']) || $paymentLink === '') {
+    if (empty($decoded['success']) || $paymentLink === '') {
         $errorCode = (string)($decoded['error']['code'] ?? $decoded['code'] ?? $decoded['error_code'] ?? 'create_rejected');
         $errorMessage = trim((string)($decoded['error']['message'] ?? $decoded['message'] ?? $decoded['error'] ?? ''));
         // Never log response bodies or credentials: only HTTP status and provider error identifiers.
