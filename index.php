@@ -5444,20 +5444,6 @@ if ($text == "/start" || $datain == "start" || $text == "start") {
             }
             return;
         }
-        // Save AbanGateway's remote invoice id so the callback can verify
-        // this exact provider invoice against this local order.
-        $saveAbanInvoice = $pdo->prepare(
-            "UPDATE payment_report SET dec_not_confirmed = ? WHERE id_order = ? AND Payment_Method = 'AbanGateway' AND payment_Status = 'Unpaid'"
-        );
-        $saveAbanInvoice->execute([$pay['invoice_id'], $randomString]);
-        if ($saveAbanInvoice->rowCount() !== 1) {
-            error_log('AbanGateway: could not persist remote invoice id for order ' . $randomString);
-            sendmessage($from_id, $textbotlang['users']['Balance']['errorLinkPayment'], $keyboard, 'HTML');
-            step('home', $from_id);
-            return;
-        }
-        clearSelectCache('payment_report');
-
         linkPaymentToOrder($randomString, $user);
 
         $pricetoman = number_format($user['Processing_value'], 0);
