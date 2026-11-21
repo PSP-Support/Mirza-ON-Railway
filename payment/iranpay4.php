@@ -13,11 +13,8 @@ require __DIR__ . '/../vendor/autoload.php';
 $ManagePanel = new ManagePanel();
 $textbotlang = languagechange();
 
-$callbackRaw = (string)file_get_contents('php://input');
-$callbackJson = json_decode($callbackRaw, true);
-$callbackJson = is_array($callbackJson) ? $callbackJson : [];
-$order_id = trim((string)($_GET['order_id'] ?? $_POST['order_id'] ?? $callbackJson['order_id'] ?? ''));
-$authority = trim((string)($_GET['authority'] ?? $_POST['authority'] ?? $callbackJson['authority'] ?? ''));
+$order_id = trim((string) ($_GET['order_id'] ?? $_POST['order_id'] ?? ''));
+$authority = trim((string) ($_GET['authority'] ?? $_POST['authority'] ?? ''));
 
 function iranpay4_finish(bool $ok, string $title, string $detail): never
 {
@@ -37,7 +34,6 @@ function iranpay4_finish(bool $ok, string $title, string $detail): never
 
 $failedTitle = $textbotlang['paymentGateway']['statusFailed'] ?? 'پرداخت ناموفق';
 $successTitle = $textbotlang['paymentGateway']['statusSuccess'] ?? 'پرداخت موفق';
-$setting = config_all('setting');
 
 if ($order_id === '') {
     iranpay4_finish(false, $failedTitle, 'شناسه سفارش ارسال نشد.');
@@ -78,13 +74,8 @@ curl_setopt_array($curl, [
     ], JSON_UNESCAPED_UNICODE),
 ]);
 $result = curl_exec($curl);
-$curlError = curl_error($curl);
-$httpCode = (int)curl_getinfo($curl, CURLINFO_HTTP_CODE);
-curl_close($curl);
-if ($result === false) {
-    error_log('AbanGateway Mirza verify transport failure; HTTP ' . $httpCode . '; cURL: ' . $curlError);
-    iranpay4_finish(false, $failedTitle, 'ارتباط با درگاه برای تأیید پرداخت برقرار نشد.');
-}
+$httpCode = (int) curl_getinfo($curl, CURLINFO_HTTP_CODE);
+
 $response = is_string($result) ? json_decode($result, true) : null;
 
 $answeredForThisOrder = is_array($response)
@@ -97,9 +88,7 @@ $accepted = $httpCode === 200
     && $answeredForThisOrder;
 
 if (!$accepted) {
-    $errorCode = is_array($response) ? (string)($response['error_code'] ?? $response['code'] ?? 'verify_rejected') : 'invalid_response';
-    error_log('AbanGateway Mirza verify rejected; HTTP ' . $httpCode . '; code ' . $errorCode . '; order ' . $order_id);
-    iranpay4_finish(false, $failedTitle, 'پرداخت توسط آبان‌گیت‌وی تأیید نشد.');
+    iranpay4_finish(false, $failedTitle, 'پرداخت تایید نشد.');
 }
 
 if (!claimPaymentPaid($order_id)) {
