@@ -808,15 +808,13 @@ function cubepayPayableAmount($price)
 }
 function abangatewayEndpoint(): ?string
 {
-    // AbanGateway's dedicated Mirza connection returns a per-bot HTTPS URL.
-    // It is not the public /api/v1 base URL.
-    $endpoint = trim((string)getPaySettingValue('endpointiranpay4', ''));
+    $endpoint = trim((string) getPaySettingValue('endpointiranpay4', ''));
     if ($endpoint === '' || $endpoint === '0') {
         return null;
     }
 
     $parts = parse_url($endpoint);
-    if (!is_array($parts) || strtolower((string)($parts['scheme'] ?? '')) !== 'https' || empty($parts['host'])) {
+    if (!is_array($parts) || ($parts['scheme'] ?? '') !== 'https' || ($parts['host'] ?? '') === '') {
         return null;
     }
 
@@ -827,16 +825,16 @@ function abangatewayCardInvoice($pay, $order_id)
 {
     global $textbotlang;
 
-    $number = preg_replace('/\\D/', '', (string)($pay['card']['number'] ?? ''));
-    $rial = (int)($pay['payable_rial'] ?? 0);
-    $toman = (int)($pay['payable_toman'] ?? 0);
-    $minutes = (int)($pay['minutes_left'] ?? 0);
+    $number = preg_replace('/\D/', '', (string) ($pay['card']['number'] ?? ''));
+    $rial = intval($pay['payable_rial'] ?? 0);
+    $toman = intval($pay['payable_toman'] ?? 0);
+    $minutes = intval($pay['minutes_left'] ?? 0);
     if (empty($pay['card_in_bot']) || $number === '' || $rial < 1 || $toman < 1 || $minutes < 1) {
         return null;
     }
 
-    $holder = htmlspecialchars(trim((string)($pay['card']['holder'] ?? '')), ENT_QUOTES, 'UTF-8');
-    $bank = trim((string)($pay['card']['bank'] ?? ''));
+    $holder = htmlspecialchars(trim((string) ($pay['card']['holder'] ?? '')), ENT_QUOTES, 'UTF-8');
+    $bank = trim((string) ($pay['card']['bank'] ?? ''));
     if ($bank !== '') {
         $holder .= ' (' . htmlspecialchars($bank, ENT_QUOTES, 'UTF-8') . ')';
     }
@@ -848,8 +846,8 @@ function abangatewayCardInvoice($pay, $order_id)
             'inline_keyboard' => [
                 [['text' => $textbotlang['keyboard']['copyCardNumber'], 'copy_text' => ['text' => $number]]],
                 [
-                    ['text' => $textbotlang['keyboard']['abangatewayCopyRial'], 'copy_text' => ['text' => (string)$rial]],
-                    ['text' => $textbotlang['keyboard']['abangatewayCopyToman'], 'copy_text' => ['text' => (string)$toman]],
+                    ['text' => $textbotlang['keyboard']['abangatewayCopyRial'], 'copy_text' => ['text' => (string) $rial]],
+                    ['text' => $textbotlang['keyboard']['abangatewayCopyToman'], 'copy_text' => ['text' => (string) $toman]],
                 ],
                 [['text' => $lang['payments'], 'url' => $pay['payment_link']]],
             ],
@@ -857,129 +855,41 @@ function abangatewayCardInvoice($pay, $order_id)
     ];
 }
 
-/**
- * Dedicated Mirza integration endpoint issued by AbanGateway.
- * The URL supplied by AbanGateway is already the complete endpoint: POST to
- * it as-is. Do not append /create or use the public /api/v1/invoices route.
- */
 function createPayiranpay4($price, $order_id, $user_id)
 {
     global $domainhosts;
 
-    $apiKey = trim((string)getPaySettingValue('apiiranpay4', ''));
+    $api_key = trim((string) getPaySettingValue('apiiranpay4', ''));
     $endpoint = abangatewayEndpoint();
-    if ($apiKey === '' || $apiKey === '0' || $endpoint === null) {
-        error_log('AbanGateway Mirza create: connection key or dedicated HTTPS endpoint is missing');
-        return ['success' => false, 'message' => 'AbanGateway: connection key or dedicated endpoint is missing'];
+    if ($api_key === '' || $api_key === '0' || $endpoint === null) {
+        return ['success' => false, 'message' => 'iranpay4: key or endpoint is unset'];
     }
 
-    $amountToman = (int)round((float)$price);
-    if ($amountToman < 1) {
-        error_log('AbanGateway Mirza create: invalid Toman amount');
-        return ['success' => false, 'message' => 'AbanGateway: invalid amount'];
-    }
-
-    $host = trim((string)$domainhosts);
-    if ($host === '') {
-        error_log('AbanGateway Mirza create: APP_URL / Railway public domain is missing');
-        return ['success' => false, 'message' => 'AbanGateway: public callback domain is missing'];
-    }
-
-    $payload = [
-        'amount' => $amountToman,
-        'order_id' => (string)$order_id,
-        'user_id' => (string)$user_id,
-        'callback_url' => 'https://' . $host . '/payment/iranpay4.php',
-    ];
-
-    $responseHeaders = ['allow' => '', 'content_type' => '', 'server' => ''];
     $curl = curl_init();
     curl_setopt_array($curl, [
-        CURLOPT_URL => $endpoint,
+        CURLOPT_URL => $endpoint . '/create',
         CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_CONNECTTIMEOUT => 10,
         CURLOPT_TIMEOUT => 25,
-        CURLOPT_POST => true,
+        CURLOPT_CUSTOMREQUEST => 'POST',
         CURLOPT_HTTPHEADER => [
             'Content-Type: application/json',
             'Accept: application/json',
-            'Authorization: Bearer ' . $apiKey,
+            'Authorization: Bearer ' . $api_key,
         ],
-        CURLOPT_POSTFIELDS => json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
-        CURLOPT_HEADERFUNCTION => static function ($curlHandle, string $headerLine) use (&$responseHeaders): int {
-            $length = strlen($headerLine);
-            $parts = explode(':', $headerLine, 2);
-            if (count($parts) === 2) {
-                $name = strtolower(trim($parts[0]));
-                $value = trim($parts[1]);
-                if (in_array($name, ['allow', 'content-type', 'server'], true)) {
-                    $key = $name === 'content-type' ? 'content_type' : $name;
-                    $responseHeaders[$key] = substr($value, 0, 160);
-                }
-            }
-            return $length;
-        },
+        CURLOPT_POSTFIELDS => json_encode([
+            'amount' => intval($price),
+            'order_id' => $order_id,
+            'user_id' => (string) $user_id,
+            'callback_url' => "https://$domainhosts/payment/iranpay4.php",
+        ], JSON_UNESCAPED_UNICODE),
     ]);
 
     $response = curl_exec($curl);
-    $curlError = curl_error($curl);
-    $httpCode = (int)curl_getinfo($curl, CURLINFO_HTTP_CODE);
-    curl_close($curl);
-
     if ($response === false) {
-        error_log('AbanGateway Mirza create transport failure; HTTP ' . $httpCode . '; cURL: ' . $curlError);
-        return ['success' => false, 'http_code' => $httpCode, 'message' => 'AbanGateway: connection to dedicated endpoint failed'];
+        return ['success' => false, 'message' => 'iranpay4: gateway unreachable'];
     }
 
-    // Diagnose HTTP errors before trying to decode the body. Some endpoint
-    // routers return an HTML 405 page rather than the JSON used by the API.
-    if ($httpCode < 200 || $httpCode >= 300) {
-        $allow = $responseHeaders['allow'];
-        $contentType = $responseHeaders['content_type'];
-        error_log(
-            'AbanGateway Mirza create HTTP failure; code ' . $httpCode .
-            '; content-type ' . ($contentType !== '' ? $contentType : 'unknown') .
-            '; allow ' . ($allow !== '' ? $allow : 'not provided') .
-            '; server ' . ($responseHeaders['server'] !== '' ? $responseHeaders['server'] : 'unknown')
-        );
-        return [
-            'success' => false,
-            'http_code' => $httpCode,
-            'allowed_methods' => $allow,
-            'content_type' => $contentType,
-            'message' => 'AbanGateway endpoint returned HTTP ' . $httpCode .
-                ($allow !== '' ? '; allowed methods: ' . $allow : '') .
-                ($contentType !== '' ? '; response: ' . $contentType : ''),
-        ];
-    }
-
-    $decoded = json_decode((string)$response, true);
-    if (!is_array($decoded)) {
-        error_log('AbanGateway Mirza create returned invalid JSON; HTTP ' . $httpCode . '; content-type ' . ($responseHeaders['content_type'] ?: 'unknown'));
-        return ['success' => false, 'http_code' => $httpCode, 'content_type' => $responseHeaders['content_type'], 'message' => 'AbanGateway: invalid JSON response'];
-    }
-
-    $paymentLink = trim((string)($decoded['payment_link'] ?? $decoded['payment_url'] ?? $decoded['pay_page_url'] ?? ''));
-    if (empty($decoded['success']) || $paymentLink === '') {
-        $errorCode = (string)($decoded['error']['code'] ?? $decoded['code'] ?? $decoded['error_code'] ?? 'create_rejected');
-        $errorMessage = trim((string)($decoded['error']['message'] ?? $decoded['message'] ?? $decoded['error'] ?? ''));
-        // Never log response bodies or credentials: only HTTP status and provider error identifiers.
-        error_log('AbanGateway Mirza create rejected; HTTP ' . $httpCode . '; code ' . $errorCode . ($errorMessage !== '' ? '; message ' . substr(strip_tags($errorMessage), 0, 240) : ''));
-        $decoded['success'] = false;
-        $decoded['message'] = 'AbanGateway ' . $httpCode . ': ' . $errorCode . ($errorMessage !== '' ? ' - ' . substr(strip_tags($errorMessage), 0, 240) : '');
-        return $decoded;
-    }
-
-    // Normalize response aliases for the existing Mirza bot UI.
-    $decoded['payment_link'] = $paymentLink;
-    if (!isset($decoded['payable_rial']) && isset($decoded['amount_rial'])) {
-        $decoded['payable_rial'] = (int)$decoded['amount_rial'];
-    }
-    if (!isset($decoded['payable_toman']) && isset($decoded['amount_toman'])) {
-        $decoded['payable_toman'] = (int)$decoded['amount_toman'];
-    }
-
-    return $decoded;
+    return json_decode($response, true) ?: ['success' => false, 'message' => 'iranpay4: bad response'];
 }
 
 function cubepay($order_id, $price, $customer_user_id)
