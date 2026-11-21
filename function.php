@@ -808,24 +808,44 @@ function cubepayPayableAmount($price)
 }
 function abangatewayEndpoint(): ?string
 {
+    // The current AbanGateway API is hosted on api.abangateway.ir.
+    // Accept the old root-domain value and the documented API paths, then
+    // normalize everything to the v1 API base.
     $endpoint = trim((string) getPaySettingValue('endpointiranpay4', ''));
     if ($endpoint === '' || $endpoint === '0') {
-        return null;
+        $endpoint = 'https://api.abangateway.ir';
     }
 
     $parts = parse_url($endpoint);
-    if (!is_array($parts) || ($parts['scheme'] ?? '') !== 'https' || ($parts['host'] ?? '') === '') {
+    if (!is_array($parts) || strtolower((string)($parts['scheme'] ?? '')) !== 'https') {
         return null;
     }
 
-    return rtrim($endpoint, '/');
+    $host = strtolower((string)($parts['host'] ?? ''));
+    if ($host === 'abangateway.ir') {
+        $host = 'api.abangateway.ir';
+    }
+    // Do not send a merchant bearer token to an arbitrary host.
+    if ($host !== 'api.abangateway.ir') {
+        return null;
+    }
+
+    $path = rtrim((string)($parts['path'] ?? ''), '/');
+    foreach (['/api/v1/invoices', '/api/v1', '/create'] as $suffix) {
+        if (str_ends_with($path, $suffix)) {
+            $path = substr($path, 0, -strlen($suffix));
+            break;
+        }
+    }
+
+    return 'https://api.abangateway.ir' . rtrim($path, '/') . '/api/v1';
 }
 
 function abangatewayCardInvoice($pay, $order_id)
 {
     global $textbotlang;
 
-    $number = preg_replace('/\D/', '', (string) ($pay['card']['number'] ?? ''));
+    $number = preg_replace('/\\D/', '', (string) ($pay['card']['number'] ?? ''));
     $rial = intval($pay['payable_rial'] ?? 0);
     $toman = intval($pay['payable_toman'] ?? 0);
     $minutes = intval($pay['minutes_left'] ?? 0);
@@ -860,36 +880,108 @@ function createPayiranpay4($price, $order_id, $user_id)
     global $domainhosts;
 
     $api_key = trim((string) getPaySettingValue('apiiranpay4', ''));
-    $endpoint = abangatewayEndpoint();
-    if ($api_key === '' || $api_key === '0' || $endpoint === null) {
-        return ['success' => false, 'message' => 'iranpay4: key or endpoint is unset'];
+    $apiBase = abangatewayEndpoint();
+    if ($api_key === '' || $api_key === '0' || $apiBase === null) {
+        return ['success' => false, 'message' => 'AbanGateway: API key or API endpoint is not configured'];
     }
+
+    $amountToman = (int) round((float)$price);
+    if ($amountToman < 1 || $amountToman > intdiv(PHP_INT_MAX, 10)) {
+        return ['success' => false, 'message' => 'AbanGateway: invalid payment amount'];
+    }
+
+    $siteHost = trim((string)$domainhosts);
+    if ($siteHost === '') {
+        return ['success' => false, 'message' => 'AbanGateway: APP_URL or Railway public domain is not configured'];
+    }
+
+    $callbackUrl = 'https://' . $siteHost . '/payment/iranpay4.php';
+    $returnUrl = $callbackUrl . '?order_id=' . rawurlencode((string)$order_id);
+    $payload = [
+        'amount_rial' => $amountToman * 10,
+        'order_id' => (string)$order_id,
+        'callback_url' => $callbackUrl,
+        'return_url' => $returnUrl,
+        'description' => 'NM Tunnel order ' . (string)$order_id,
+        'metadata' => [
+            'user_id' => (string)$user_id,
+        ],
+    ];
 
     $curl = curl_init();
     curl_setopt_array($curl, [
-        CURLOPT_URL => $endpoint . '/create',
+        CURLOPT_URL => $apiBase . '/invoices',
         CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_CONNECTTIMEOUT => 10,
         CURLOPT_TIMEOUT => 25,
-        CURLOPT_CUSTOMREQUEST => 'POST',
+        CURLOPT_POST => true,
         CURLOPT_HTTPHEADER => [
+            'Authorization: Bearer ' . $api_key,
             'Content-Type: application/json',
             'Accept: application/json',
-            'Authorization: Bearer ' . $api_key,
         ],
-        CURLOPT_POSTFIELDS => json_encode([
-            'amount' => intval($price),
-            'order_id' => $order_id,
-            'user_id' => (string) $user_id,
-            'callback_url' => "https://$domainhosts/payment/iranpay4.php",
-        ], JSON_UNESCAPED_UNICODE),
+        CURLOPT_POSTFIELDS => json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
     ]);
 
     $response = curl_exec($curl);
+    $curlError = curl_error($curl);
+    $httpCode = (int)curl_getinfo($curl, CURLINFO_HTTP_CODE);
+    curl_close($curl);
+
     if ($response === false) {
-        return ['success' => false, 'message' => 'iranpay4: gateway unreachable'];
+        error_log('AbanGateway create invoice transport error: ' . $curlError);
+        return ['success' => false, 'message' => 'AbanGateway: gateway connection failed'];
     }
 
-    return json_decode($response, true) ?: ['success' => false, 'message' => 'iranpay4: bad response'];
+    $decoded = json_decode((string)$response, true);
+    if (!is_array($decoded)) {
+        error_log('AbanGateway create invoice returned non-JSON response; HTTP ' . $httpCode);
+        return ['success' => false, 'http_code' => $httpCode, 'message' => 'AbanGateway: invalid gateway response'];
+    }
+
+    if ($httpCode < 200 || $httpCode >= 300) {
+        $errorCode = (string)($decoded['error']['code'] ?? $decoded['code'] ?? 'request_failed');
+        $errorMessage = trim((string)($decoded['error']['message'] ?? $decoded['message'] ?? ''));
+        error_log('AbanGateway create invoice rejected; HTTP ' . $httpCode . ', code ' . $errorCode);
+        return [
+            'success' => false,
+            'http_code' => $httpCode,
+            'error_code' => $errorCode,
+            'message' => 'AbanGateway ' . $httpCode . ': ' . $errorCode . ($errorMessage !== '' ? ' - ' . $errorMessage : ''),
+        ];
+    }
+
+    $paymentUrl = trim((string)($decoded['payment_url'] ?? $decoded['payment_link'] ?? ''));
+    $invoiceId = trim((string)($decoded['invoice_id'] ?? ''));
+    $urlParts = $paymentUrl !== '' ? parse_url($paymentUrl) : false;
+    if ($invoiceId === '' || !$urlParts || strtolower((string)($urlParts['scheme'] ?? '')) !== 'https' || empty($urlParts['host'])) {
+        error_log('AbanGateway create invoice response missing invoice_id or valid payment_url; HTTP ' . $httpCode);
+        return ['success' => false, 'http_code' => $httpCode, 'message' => 'AbanGateway: invoice response is missing a valid payment link'];
+    }
+
+    $payableRial = (int)($decoded['payable_rial'] ?? 0);
+    $payableToman = (int)($decoded['payable_toman'] ?? ($payableRial > 0 ? round($payableRial / 10) : 0));
+    $expiresAt = strtotime((string)($decoded['expires_at'] ?? ''));
+    $minutesLeft = $expiresAt ? max(1, (int)ceil(($expiresAt - time()) / 60)) : 15;
+    $cardNumber = (string)($decoded['card_number'] ?? '');
+
+    return [
+        'success' => true,
+        'invoice_id' => $invoiceId,
+        'payment_link' => $paymentUrl,
+        'amount_rial' => (int)($decoded['amount_rial'] ?? ($amountToman * 10)),
+        'payable_rial' => $payableRial,
+        'payable_toman' => $payableToman,
+        'card_in_bot' => $cardNumber !== '',
+        'card' => [
+            'number' => $cardNumber,
+            'holder' => (string)($decoded['card_holder'] ?? ''),
+            'bank' => (string)($decoded['bank'] ?? ''),
+        ],
+        'minutes_left' => $minutesLeft,
+        'expires_at' => (string)($decoded['expires_at'] ?? ''),
+        'raw_status' => (string)($decoded['status'] ?? 'pending'),
+    ];
 }
 
 function cubepay($order_id, $price, $customer_user_id)
