@@ -859,9 +859,8 @@ function abangatewayCardInvoice($pay, $order_id)
 
 /**
  * Dedicated Mirza integration endpoint issued by AbanGateway.
- * This is intentionally /create with amount in TOMAN. Do not replace it with
- * the public Aban REST API (/api/v1/invoices), which uses a different token and
- * payload contract.
+ * The URL supplied by AbanGateway is already the complete endpoint: POST to
+ * it as-is. Do not append /create or use the public /api/v1/invoices route.
  */
 function createPayiranpay4($price, $order_id, $user_id)
 {
@@ -895,7 +894,7 @@ function createPayiranpay4($price, $order_id, $user_id)
 
     $curl = curl_init();
     curl_setopt_array($curl, [
-        CURLOPT_URL => $endpoint . '/create',
+        CURLOPT_URL => $endpoint,
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_CONNECTTIMEOUT => 10,
         CURLOPT_TIMEOUT => 25,
