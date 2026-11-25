@@ -79,3 +79,11 @@ body #root .mirza-nav-item:active{transform:scale(.91)!important;background-colo
 @media(hover:hover) and (pointer:fine){body #root .mirza-nav-item:hover{transform:translateY(-2px)!important;background-color:rgba(0,201,135,.10)!important;color:#d8fff0!important;}body #root .mirza-nav-item:hover svg{transform:scale(1.08)!important;}}
 body #root main{padding-bottom:100px!important;}
 @media(max-width:420px){body #root .mirza-bottom-nav-inner{width:calc(100% - 20px)!important;height:64px!important;gap:2px!important;}body #root .mirza-nav-item{font-size:10px!important;}}
+
+/* Desktop narrow-window fix: force all four navigation items into one explicit row */
+body #root nav.mirza-bottom-nav{direction:ltr!important;position:fixed!important;left:0!important;right:0!important;bottom:calc(env(safe-area-inset-bottom,0px) + 8px)!important;top:auto!important;width:100%!important;display:flex!important;justify-content:center!important;align-items:center!important;transform:none!important;z-index:9999!important;}
+body #root nav.mirza-bottom-nav .mirza-bottom-nav-inner{direction:ltr!important;display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;grid-auto-flow:column!important;grid-auto-columns:minmax(0,1fr)!important;justify-content:stretch!important;align-content:stretch!important;align-items:stretch!important;overflow:visible!important;width:calc(100% - 24px)!important;max-width:500px!important;height:68px!important;min-width:0!important;}
+body #root nav.mirza-bottom-nav .mirza-nav-item{direction:rtl!important;display:flex!important;flex:initial!important;min-width:0!important;width:100%!important;max-width:none!important;overflow:visible!important;}
+body #root nav.mirza-bottom-nav .mirza-nav-item:first-child{grid-column:auto!important;visibility:visible!important;opacity:1!important;display:flex!important;}
+body #root nav.mirza-bottom-nav .mirza-nav-item:first-child span{display:block!important;visibility:visible!important;opacity:1!important;}
+@media(max-width:440px){body #root nav.mirza-bottom-nav .mirza-bottom-nav-inner{width:calc(100% - 20px)!important;height:64px!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:2px!important;}body #root nav.mirza-bottom-nav .mirza-nav-item span{font-size:9px!important;}}
