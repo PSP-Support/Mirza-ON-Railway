@@ -67,26 +67,26 @@ html.light body.mirza-buy-page .font-vazir .max-w-4xl [class*="cursor-pointer"][
 @media(max-width:420px){body.mirza-buy-page .font-vazir,body.mirza-services-page .font-vazir,body.mirza-account-page .font-vazir{padding:18px 12px 150px!important}body.mirza-buy-page .font-vazir>h1,body.mirza-services-page .font-vazir>h1,body.mirza-account-page .font-vazir>h1{font-size:26px!important;margin-bottom:20px!important}}
 
 
-/* Fix Telegram mobile viewport: keep the bottom navigation pinned to the visible viewport */
+/* Layout correction: navigation stays in the app's flex flow to avoid Telegram iOS WebView fixed-position viewport bugs */
 html,body,#root{min-height:100%;}
-body #root .fixed.bottom-6{position:fixed!important;top:auto!important;bottom:calc(env(safe-area-inset-bottom,0px) + 10px)!important;left:0!important;right:0!important;margin:0!important;transform:none!important;z-index:9999!important;}
-body #root main{padding-bottom:calc(92px + env(safe-area-inset-bottom,0px))!important;}
-@media(max-width:767px){body #root .fixed.bottom-6{bottom:calc(env(safe-area-inset-bottom,0px) + 10px)!important;}body #root .fixed.bottom-6>div{height:66px!important;}}
-
-
-/* Desktop-only layout guard: mobile viewport fix must not distort the PC mini-app */
-@media(min-width:768px){
- body #root .fixed.bottom-6{position:fixed!important;top:auto!important;bottom:24px!important;left:0!important;right:0!important;width:100%!important;margin:0!important;transform:none!important;z-index:9999!important;}
- body #root .fixed.bottom-6>div{height:64px!important;width:min(500px,calc(100% - 48px))!important;max-width:500px!important;margin-inline:auto!important;border-radius:20px!important;}
- body #root main{padding-bottom:112px!important;}
- body.mirza-buy-page .font-vazir,body.mirza-services-page .font-vazir,body.mirza-account-page .font-vazir{max-width:720px!important;margin-inline:auto!important;padding-left:28px!important;padding-right:28px!important;}
+body #root .fixed.bottom-6{
+ position:sticky!important;top:auto!important;bottom:0!important;left:auto!important;right:auto!important;
+ width:100%!important;margin-top:auto!important;margin-left:0!important;margin-right:0!important;
+ transform:none!important;display:flex!important;justify-content:center!important;align-items:center!important;
+ padding:10px 0 calc(10px + env(safe-area-inset-bottom,0px))!important;
+ box-sizing:border-box!important;z-index:60!important;
 }
-
-
-/* Telegram Desktop can open the mini-app in a narrow window; detect desktop by pointer, not viewport width */
+body #root .fixed.bottom-6>div{
+ position:relative!important;inset:auto!important;transform:none!important;
+ width:calc(100% - 24px)!important;max-width:500px!important;height:66px!important;
+ margin:0 auto!important;box-sizing:border-box!important;
+}
+body #root main{padding-bottom:16px!important;}
+body.mirza-buy-page .font-vazir,body.mirza-services-page .font-vazir,body.mirza-account-page .font-vazir{
+ padding-bottom:24px!important;box-sizing:border-box!important;
+}
 @media (hover:hover) and (pointer:fine){
- body #root .fixed.bottom-6{position:fixed!important;inset:auto 0 14px 0!important;width:100%!important;margin:0!important;padding:0!important;transform:none!important;display:flex!important;justify-content:center!important;align-items:center!important;z-index:9999!important;}
- body #root .fixed.bottom-6>div{position:relative!important;inset:auto!important;transform:none!important;width:calc(100% - 26px)!important;max-width:500px!important;height:64px!important;margin:0 auto!important;}
- body #root main{padding-bottom:100px!important;}
- body.mirza-buy-page .font-vazir,body.mirza-services-page .font-vazir,body.mirza-account-page .font-vazir{width:100%!important;max-width:560px!important;margin-inline:auto!important;box-sizing:border-box!important;}
+ body #root .fixed.bottom-6{padding-bottom:10px!important;}
+ body #root .fixed.bottom-6>div{width:min(500px,calc(100% - 48px))!important;height:64px!important;}
+ body.mirza-buy-page .font-vazir,body.mirza-services-page .font-vazir,body.mirza-account-page .font-vazir{max-width:560px!important;margin-inline:auto!important;}
 }
