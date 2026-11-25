@@ -67,45 +67,15 @@ html.light body.mirza-buy-page .font-vazir .max-w-4xl [class*="cursor-pointer"][
 @media(max-width:420px){body.mirza-buy-page .font-vazir,body.mirza-services-page .font-vazir,body.mirza-account-page .font-vazir{padding:18px 12px 150px!important}body.mirza-buy-page .font-vazir>h1,body.mirza-services-page .font-vazir>h1,body.mirza-account-page .font-vazir>h1{font-size:26px!important;margin-bottom:20px!important}}
 
 
-/* Layout correction: navigation stays in the app's flex flow to avoid Telegram iOS WebView fixed-position viewport bugs */
-html,body,#root{min-height:100%;}
-body #root .fixed.bottom-6{
- position:sticky!important;top:auto!important;bottom:0!important;left:auto!important;right:auto!important;
- width:100%!important;margin-top:auto!important;margin-left:0!important;margin-right:0!important;
- transform:none!important;display:flex!important;justify-content:center!important;align-items:center!important;
- padding:10px 0 calc(10px + env(safe-area-inset-bottom,0px))!important;
- box-sizing:border-box!important;z-index:60!important;
-}
-body #root .fixed.bottom-6>div{
- position:relative!important;inset:auto!important;transform:none!important;
- width:calc(100% - 24px)!important;max-width:500px!important;height:66px!important;
- margin:0 auto!important;box-sizing:border-box!important;
-}
-body #root main{padding-bottom:16px!important;}
-body.mirza-buy-page .font-vazir,body.mirza-services-page .font-vazir,body.mirza-account-page .font-vazir{
- padding-bottom:24px!important;box-sizing:border-box!important;
-}
-@media (hover:hover) and (pointer:fine){
- body #root .fixed.bottom-6{padding-bottom:10px!important;}
- body #root .fixed.bottom-6>div{width:min(500px,calc(100% - 48px))!important;height:64px!important;}
- body.mirza-buy-page .font-vazir,body.mirza-services-page .font-vazir,body.mirza-account-page .font-vazir{max-width:560px!important;margin-inline:auto!important;}
-}
-
-
-/* Ensure all four navigation destinations remain visible in Telegram Desktop */
-@media (hover:hover) and (pointer:fine){
- body #root .fixed.bottom-6{position:fixed!important;inset:auto 0 10px 0!important;display:flex!important;justify-content:center!important;align-items:center!important;width:100%!important;padding:0 0 10px!important;margin:0!important;}
- body #root .fixed.bottom-6>div{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:2px!important;align-items:stretch!important;width:calc(100% - 24px)!important;max-width:500px!important;height:66px!important;padding:4px!important;box-sizing:border-box!important;}
- body #root .fixed.bottom-6>div>button{display:flex!important;visibility:visible!important;opacity:1!important;width:100%!important;min-width:0!important;flex:initial!important;padding:4px 2px!important;align-items:center!important;justify-content:center!important;}
- body #root .fixed.bottom-6>div>button span{display:block!important;visibility:visible!important;white-space:nowrap!important;font-size:10px!important;}
- body #root main{padding-bottom:100px!important;}
-}
-
-
-/* Desktop nav: recover the first (Home) item that was visually blank in Telegram Desktop */
-@media (hover:hover) and (pointer:fine){
- body #root .fixed.bottom-6>div>button:first-child{display:flex!important;visibility:visible!important;opacity:1!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:2px!important;color:#b9d7ca!important;min-width:0!important;overflow:visible!important;}
- body #root .fixed.bottom-6>div>button:first-child svg{display:block!important;visibility:visible!important;opacity:1!important;width:20px!important;height:20px!important;flex:0 0 20px!important;}
- body #root .fixed.bottom-6>div>button:first-child span{display:block!important;visibility:visible!important;opacity:1!important;color:inherit!important;font-family:Vazir,Tahoma,sans-serif!important;font-size:10px!important;line-height:1.3!important;white-space:nowrap!important;}
- body #root .fixed.bottom-6>div>button:first-child::after{content:"خانه";display:none;}
-}
+/* Unified animated navigation for Telegram mobile and desktop */
+body #root .mirza-bottom-nav{position:fixed!important;inset:auto 0 calc(env(safe-area-inset-bottom,0px) + 8px)!important;display:flex!important;justify-content:center!important;align-items:center!important;width:100%!important;margin:0!important;padding:0!important;transform:none!important;z-index:9999!important;pointer-events:none!important;}
+body #root .mirza-bottom-nav-inner{pointer-events:auto!important;display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;align-items:stretch!important;gap:4px!important;width:calc(100% - 24px)!important;max-width:500px!important;height:68px!important;padding:5px!important;box-sizing:border-box!important;border:1px solid rgba(0,201,135,.28)!important;border-radius:22px!important;background:rgba(4,19,15,.96)!important;box-shadow:0 12px 36px rgba(0,0,0,.35)!important;backdrop-filter:blur(16px)!important;-webkit-backdrop-filter:blur(16px)!important;}
+body #root .mirza-nav-item{appearance:none!important;-webkit-appearance:none!important;display:flex!important;visibility:visible!important;opacity:1!important;min-width:0!important;width:100%!important;height:100%!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:3px!important;padding:4px 2px!important;margin:0!important;border:0!important;border-radius:16px!important;background:transparent!important;color:#9bb8ac!important;font-family:Vazir,Tahoma,sans-serif!important;font-size:11px!important;line-height:1.2!important;white-space:nowrap!important;cursor:pointer!important;transform:translateZ(0) scale(1)!important;transition:transform .18s cubic-bezier(.2,.8,.2,1),background-color .22s ease,color .22s ease,box-shadow .22s ease!important;}
+body #root .mirza-nav-item svg{display:block!important;visibility:visible!important;opacity:1!important;width:22px!important;height:22px!important;flex:0 0 22px!important;transition:transform .22s cubic-bezier(.2,.8,.2,1)!important;}
+body #root .mirza-nav-item span{display:block!important;visibility:visible!important;opacity:1!important;color:inherit!important;font-size:10px!important;line-height:1.35!important;white-space:nowrap!important;}
+body #root .mirza-nav-item.is-active{color:#d8fff0!important;background:rgba(0,201,135,.16)!important;box-shadow:inset 0 0 0 1px rgba(0,201,135,.12)!important;}
+body #root .mirza-nav-item.is-active svg{transform:translateY(-1px) scale(1.06)!important;}
+body #root .mirza-nav-item:active{transform:scale(.91)!important;background-color:rgba(0,201,135,.22)!important;}
+@media(hover:hover) and (pointer:fine){body #root .mirza-nav-item:hover{transform:translateY(-2px)!important;background-color:rgba(0,201,135,.10)!important;color:#d8fff0!important;}body #root .mirza-nav-item:hover svg{transform:scale(1.08)!important;}}
+body #root main{padding-bottom:100px!important;}
+@media(max-width:420px){body #root .mirza-bottom-nav-inner{width:calc(100% - 20px)!important;height:64px!important;gap:2px!important;}body #root .mirza-nav-item{font-size:10px!important;}}
