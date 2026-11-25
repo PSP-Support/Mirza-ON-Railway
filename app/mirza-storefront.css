@@ -81,3 +81,12 @@ body #root main{padding-bottom:calc(92px + env(safe-area-inset-bottom,0px))!impo
  body #root main{padding-bottom:112px!important;}
  body.mirza-buy-page .font-vazir,body.mirza-services-page .font-vazir,body.mirza-account-page .font-vazir{max-width:720px!important;margin-inline:auto!important;padding-left:28px!important;padding-right:28px!important;}
 }
+
+
+/* Telegram Desktop can open the mini-app in a narrow window; detect desktop by pointer, not viewport width */
+@media (hover:hover) and (pointer:fine){
+ body #root .fixed.bottom-6{position:fixed!important;inset:auto 0 14px 0!important;width:100%!important;margin:0!important;padding:0!important;transform:none!important;display:flex!important;justify-content:center!important;align-items:center!important;z-index:9999!important;}
+ body #root .fixed.bottom-6>div{position:relative!important;inset:auto!important;transform:none!important;width:calc(100% - 26px)!important;max-width:500px!important;height:64px!important;margin:0 auto!important;}
+ body #root main{padding-bottom:100px!important;}
+ body.mirza-buy-page .font-vazir,body.mirza-services-page .font-vazir,body.mirza-account-page .font-vazir{width:100%!important;max-width:560px!important;margin-inline:auto!important;box-sizing:border-box!important;}
+}
