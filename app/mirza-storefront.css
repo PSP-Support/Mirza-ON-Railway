@@ -90,3 +90,13 @@ body.mirza-buy-page .font-vazir,body.mirza-services-page .font-vazir,body.mirza-
  body #root .fixed.bottom-6>div{width:min(500px,calc(100% - 48px))!important;height:64px!important;}
  body.mirza-buy-page .font-vazir,body.mirza-services-page .font-vazir,body.mirza-account-page .font-vazir{max-width:560px!important;margin-inline:auto!important;}
 }
+
+
+/* Ensure all four navigation destinations remain visible in Telegram Desktop */
+@media (hover:hover) and (pointer:fine){
+ body #root .fixed.bottom-6{position:fixed!important;inset:auto 0 10px 0!important;display:flex!important;justify-content:center!important;align-items:center!important;width:100%!important;padding:0 0 10px!important;margin:0!important;}
+ body #root .fixed.bottom-6>div{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:2px!important;align-items:stretch!important;width:calc(100% - 24px)!important;max-width:500px!important;height:66px!important;padding:4px!important;box-sizing:border-box!important;}
+ body #root .fixed.bottom-6>div>button{display:flex!important;visibility:visible!important;opacity:1!important;width:100%!important;min-width:0!important;flex:initial!important;padding:4px 2px!important;align-items:center!important;justify-content:center!important;}
+ body #root .fixed.bottom-6>div>button span{display:block!important;visibility:visible!important;white-space:nowrap!important;font-size:10px!important;}
+ body #root main{padding-bottom:100px!important;}
+}
