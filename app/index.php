@@ -8,7 +8,7 @@
     <script type="module" crossorigin src="./assets/index-C-2a0Dur.js?v=20261125-navfix1"></script>
     <link rel="modulepreload" crossorigin href="./assets/vendor-CIGJ9g2q.js">
     <link rel="stylesheet" crossorigin href="./assets/index-BoHBsj0Z.css">
-<link rel="stylesheet" href="./mirza-storefront.css?v=3">
+<link rel="stylesheet" href="./mirza-storefront.css?v=4">
   </head>
   <body>
     <script>function mirzaSetRoute(){const p=(location.pathname+location.hash+location.search).toLowerCase();document.body.classList.toggle("mirza-buy-page",p.includes("buy"));document.body.classList.toggle("mirza-services-page",p.includes("services"));document.body.classList.toggle("mirza-account-page",p.includes("account"));}mirzaSetRoute();const _ps=history.pushState,_rs=history.replaceState;history.pushState=function(){_ps.apply(this,arguments);mirzaSetRoute()};history.replaceState=function(){_rs.apply(this,arguments);mirzaSetRoute()};addEventListener("popstate",mirzaSetRoute);addEventListener("hashchange",mirzaSetRoute);</script>
