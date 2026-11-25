@@ -100,3 +100,12 @@ body.mirza-buy-page .font-vazir,body.mirza-services-page .font-vazir,body.mirza-
  body #root .fixed.bottom-6>div>button span{display:block!important;visibility:visible!important;white-space:nowrap!important;font-size:10px!important;}
  body #root main{padding-bottom:100px!important;}
 }
+
+
+/* Desktop nav: recover the first (Home) item that was visually blank in Telegram Desktop */
+@media (hover:hover) and (pointer:fine){
+ body #root .fixed.bottom-6>div>button:first-child{display:flex!important;visibility:visible!important;opacity:1!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:2px!important;color:#b9d7ca!important;min-width:0!important;overflow:visible!important;}
+ body #root .fixed.bottom-6>div>button:first-child svg{display:block!important;visibility:visible!important;opacity:1!important;width:20px!important;height:20px!important;flex:0 0 20px!important;}
+ body #root .fixed.bottom-6>div>button:first-child span{display:block!important;visibility:visible!important;opacity:1!important;color:inherit!important;font-family:Vazir,Tahoma,sans-serif!important;font-size:10px!important;line-height:1.3!important;white-space:nowrap!important;}
+ body #root .fixed.bottom-6>div>button:first-child::after{content:"خانه";display:none;}
+}
